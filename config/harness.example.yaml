@@ -1,0 +1,67 @@
+profile: local_development
+listen: 127.0.0.1:8080
+auth:
+  mode: development_token
+  token_env: HNH_DEV_TOKEN
+  allow_anonymous: false
+database:
+  url_env: HNH_DATABASE_URL
+  backend: postgresql
+model:
+  provider: configured_chat_api
+  base_url_env: HNH_MODEL_BASE_URL
+  model_env: HNH_MODEL_ID
+  api_key_env: HNH_MODEL_API_KEY
+  hosted_side_effect_tools: false
+runtime:
+  default_strategy: simple
+  max_model_turns: 20
+  max_tool_calls: 40
+  max_format_repairs: 2
+  max_active_runs_per_subject: 2
+  max_parallel_read_actions: 4
+  lease_seconds: 30
+  heartbeat_seconds: 10
+  default_deadline_seconds: 900
+  model_call_timeout_seconds: 90
+  tool_timeout_seconds: 60
+context:
+  max_inline_tool_bytes: 16384
+  preserve_source_refs: true
+  allow_secrets: false
+decision:
+  enabled: false
+  provider: typesafe
+  timeout_seconds: 5
+  fallback: simple
+sandbox:
+  required_for_code: true
+  provider: configured_broker
+  network: deny
+  allow_host_exec: false
+  allow_pickle_import: false
+  max_output_bytes: 1048576
+  image_allowlist: []
+mcp:
+  enabled: false
+  modern_version: '2026-07-28'
+  legacy_version: '2025-11-25'
+  legacy_enabled: false
+  advertise_untested_extensions: false
+child_runs:
+  enabled: false
+  max_depth: 2
+  max_children: 4
+  inherit_permissions: intersection
+  budget_accounting: parent_reservation
+retention:
+  idempotency_terminal_days: 30
+  retain_active_records: true
+observability:
+  log_bodies: false
+  redact_headers:
+  - authorization
+  - cookie
+  - set-cookie
+  - proxy-authorization
+  persist_domain_events: true

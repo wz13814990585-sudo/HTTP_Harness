@@ -1,0 +1,243 @@
+{
+  "version": "0.1.0",
+  "status": "planned_not_implemented",
+  "stages": [
+    {
+      "id": "P00",
+      "title": "仓库与依赖可行性",
+      "goal": "建立可执行开发基线，不实现一个假服务",
+      "depends_on": [],
+      "deliverables": [
+        "检查是否新仓库，保留设计资料和上游归属；不导入MiniCodex模块",
+        "创建pyproject/uv.lock、src布局、pytest、lint/typecheck和CI基础",
+        "记录Python/数据库/模型接口/官方MCP SDK可用性与实际版本；只做安全discovery验证",
+        "建立PLANS实现记录、AT追踪表与OpenAPI/schema一致性验证"
+      ],
+      "exit_gate": "文档静态校验与新增工程检查真实可运行；缺凭据/环境明确记录；锁版本可复现",
+      "acceptance_ids": [
+        "AT-001",
+        "AT-002"
+      ],
+      "prompt": "prompts/P00.md",
+      "status": "not_started"
+    },
+    {
+      "id": "P01",
+      "title": "持久化内核与授权基础",
+      "goal": "让接受请求与状态提交可靠",
+      "depends_on": [
+        "P00"
+      ],
+      "deliverables": [
+        "SQLAlchemy/Alembic真实Postgres模型：Run、Action、ModelCall、Event、Job、Idempotency、Budget",
+        "RunController唯一迁移入口；聚合版本/事件序号/原子jobs；终态不复活",
+        "开发token及subject/tenant范围；拒绝匿名，准备受限scope",
+        "POST/GET Run与取消意图基础、并发幂等、数据库worker唤醒；不要此阶段冒充完整Agent"
+      ],
+      "exit_gate": "真实Postgres并发/回滚测试通过；202持久化边界和重复准入被证明",
+      "acceptance_ids": [
+        "AT-003",
+        "AT-004",
+        "AT-005",
+        "AT-006",
+        "AT-007",
+        "AT-008",
+        "AT-009",
+        "AT-010",
+        "AT-011"
+      ],
+      "prompt": "prompts/P01.md",
+      "status": "not_started"
+    },
+    {
+      "id": "P02",
+      "title": "HTTP资源契约与统一操作网关",
+      "goal": "让模型动作与直接HTTP共享规则",
+      "depends_on": [
+        "P01"
+      ],
+      "deliverables": [
+        "CapabilityRegistry版本/稳定分页/鉴权缓存、OpenAPI/schema导出",
+        "ResourceDispatcher/ActionGateway/execute_bound不双重准入",
+        "受管工作区文件读取和版本化PUT、条件写、artifact元数据/内容端点",
+        "HTTP/inproc一致性；相对路径、query/header/body绑定；禁模型identity/admin参数"
+      ],
+      "exit_gate": "实际HTTP契约、二次参数校验、路径/权限/条件写竞争测试通过",
+      "acceptance_ids": [
+        "AT-012",
+        "AT-013",
+        "AT-014",
+        "AT-015",
+        "AT-016",
+        "AT-017",
+        "AT-018",
+        "AT-019",
+        "AT-020",
+        "AT-021"
+      ],
+      "prompt": "prompts/P02.md",
+      "status": "not_started"
+    },
+    {
+      "id": "P03",
+      "title": "模型循环、上下文与事件续传",
+      "goal": "真实运行一个非沙箱多步任务",
+      "depends_on": [
+        "P02"
+      ],
+      "deliverables": [
+        "ModelProvider Protocol + deterministic ScriptedProvider + 一个经验证的真实Chat API provider",
+        "完整响应持久化与稳定action slot；格式修复有限；禁止流式半条动作dispatch",
+        "小Runner、ContextBuilder、FinalCandidate/CompletionGate、预算与无进展终止",
+        "SSE/JSON event-history读取已提交事件；游标边界；真实模型smoke与usage记录"
+      ],
+      "exit_gate": "fake和真实provider结果分开；验收证据可解释；没有key不得声称live通过",
+      "acceptance_ids": [
+        "AT-022",
+        "AT-023",
+        "AT-024",
+        "AT-025",
+        "AT-026",
+        "AT-027",
+        "AT-028",
+        "AT-029",
+        "AT-030"
+      ],
+      "prompt": "prompts/P03.md",
+      "status": "not_started"
+    },
+    {
+      "id": "P04",
+      "title": "执行隔离与持续会话",
+      "goal": "加入受控代码执行而不是宿主exec",
+      "depends_on": [
+        "P03"
+      ],
+      "deliverables": [
+        "ExecutionBroker接口与受约束容器执行实现；模型不能指定任意镜像/mount/flags",
+        "pythond适配或等价受控执行实现：session generation、cell排他、超时/interrupt、结果错误",
+        "artifact materialize/import流程与blob原子提交/GC",
+        "CPU/memory/pid/output/network约束；执行环境丢失明确处理，禁止不可信pickle"
+      ],
+      "exit_gate": "真实sandbox限制/会话/故障测试通过；缺broker失败关闭，不退化成宿主执行",
+      "acceptance_ids": [
+        "AT-031",
+        "AT-032",
+        "AT-033",
+        "AT-034",
+        "AT-035",
+        "AT-036",
+        "AT-037",
+        "AT-038"
+      ],
+      "prompt": "prompts/P04.md",
+      "status": "not_started"
+    },
+    {
+      "id": "P05",
+      "title": "审批、未知结果与恢复加固",
+      "goal": "先做可靠单Agent候选，再扩展",
+      "depends_on": [
+        "P04"
+      ],
+      "deliverables": [
+        "InputRequest/Response精确请求hash/版本/主体/期限，一次性CAS，dispatch前重审",
+        "Recovery按四类effect运行，查询/幂等/unsafe未知结果策略与operator reconciliation",
+        "租约续期/fencing、取消竞态、预算终止、版本迁移阻塞",
+        "effect_server故障注入、SSRF/DNS/redirect与secret红线、安全回归全跑"
+      ],
+      "exit_gate": "关键故障与安全AT全部实测；v0.1候选只在满足本阶段门槛时建立",
+      "acceptance_ids": [
+        "AT-039",
+        "AT-040",
+        "AT-041",
+        "AT-042",
+        "AT-043",
+        "AT-044",
+        "AT-045",
+        "AT-046",
+        "AT-047",
+        "AT-048",
+        "AT-049",
+        "AT-050",
+        "AT-051",
+        "AT-052"
+      ],
+      "prompt": "prompts/P05.md",
+      "status": "not_started"
+    },
+    {
+      "id": "P06",
+      "title": "MCP兼容适配器",
+      "goal": "吸收新规范但不让MCP污染内核",
+      "depends_on": [
+        "P05"
+      ],
+      "deliverables": [
+        "使用实测官方SDK；modern2026-07-28与legacy2025-11-25 profile独立配置",
+        "discovery/tools导入、header/body一致、完整结果映射与任意JSON structuredContent",
+        "MRTR opaque state/InputRequest恢复、Tasks handle轮询/input/cancel；逐项测试后广告",
+        "issuer/resource凭据隔离、目录私有缓存、真实interop矩阵；核心无MCP也可运行"
+      ],
+      "exit_gate": "C1真实现代互操作通过；C2扩展/legacy逐项列证据，不以fake宣称完整兼容",
+      "acceptance_ids": [
+        "AT-053",
+        "AT-054",
+        "AT-055",
+        "AT-056",
+        "AT-057",
+        "AT-058",
+        "AT-059"
+      ],
+      "prompt": "prompts/P06.md",
+      "status": "not_started"
+    },
+    {
+      "id": "P07",
+      "title": "按需智能与有界子任务",
+      "goal": "把分类器/skills/多Agent做成可关闭插件",
+      "depends_on": [
+        "P06"
+      ],
+      "deliverables": [
+        "TypeSafe可选决策接口：请求类型/策略；置信度校准、失败fallback，不授权",
+        "skills按需加载、上下文来源引用、恶意提示不改变权限",
+        "ChildRun复用状态机，权限交集、预算预留、深度/数量上限、取消传播",
+        "classifier/skills/childruns关闭时内核依然完整可用"
+      ],
+      "exit_gate": "扩展不绕过执行/恢复/权限；收益以独立ablation评价",
+      "acceptance_ids": [
+        "AT-060",
+        "AT-061",
+        "AT-062",
+        "AT-063",
+        "AT-064"
+      ],
+      "prompt": "prompts/P07.md",
+      "status": "not_started"
+    },
+    {
+      "id": "P08",
+      "title": "评估、部署与发布候选",
+      "goal": "把宣称替换为可重复的测试证据",
+      "depends_on": [
+        "P07"
+      ],
+      "deliverables": [
+        "公平2x2与独立ablation runner、内部任务fixtures、raw.jsonl和指标脚本",
+        "完整CI、安全/chaos门槛；readiness、metrics、traces、审计脱敏",
+        "compose或等价单机部署、runbook、DB+blob备份恢复、迁移升级测试",
+        "生成用户README、API示例、真实demo/evaluation/compatibility/limitations报告"
+      ],
+      "exit_gate": "全部必需AT真实运行并报告；没过live/broker/compatibility门槛只能保留候选/实验标签",
+      "acceptance_ids": [
+        "AT-065",
+        "AT-066",
+        "AT-067",
+        "AT-068"
+      ],
+      "prompt": "prompts/P08.md",
+      "status": "not_started"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "event_id": "evt-7",
+  "run_id": "run-demo",
+  "seq": 7,
+  "schema_version": "1",
+  "type": "input.requested",
+  "occurred_at": "2026-09-22T00:02:00Z",
+  "action_id": "action-demo",
+  "data": {
+    "input_request_id": "input-demo"
+  }
+}

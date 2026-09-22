@@ -1,0 +1,107 @@
+name: hnh-dev
+
+x-app-build: &app-build
+  context: ../..
+  dockerfile: deploy/dev/Dockerfile
+
+x-database-url: &database-url postgresql+psycopg://hnh:${HNH_DB_PASSWORD:?set HNH_DB_PASSWORD}@db:5432/hnh
+
+services:
+  db:
+    image: postgres:14.18@sha256:90da0743e4ed7939b08e2945e0451401b4d7abd792530c7d3cc2da82ed534f08
+    environment:
+      POSTGRES_DB: hnh
+      POSTGRES_USER: hnh
+      POSTGRES_PASSWORD: ${HNH_DB_PASSWORD:?set HNH_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hnh -d hnh"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  migrate:
+    build: *app-build
+    image: hnh-dev:${HNH_IMAGE_TAG:-local}
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      HNH_DATABASE_URL: *database-url
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  api:
+    image: hnh-dev:${HNH_IMAGE_TAG:-local}
+    pull_policy: never
+    environment:
+      HNH_DATABASE_URL: *database-url
+      HNH_DEV_TOKEN: ${HNH_DEV_TOKEN:?set HNH_DEV_TOKEN}
+      HNH_DEV_TENANT: ${HNH_DEV_TENANT:-local}
+      HNH_DEV_SUBJECT: ${HNH_DEV_SUBJECT:-developer}
+      HNH_BLOB_ROOT: /data/blobs
+      HNH_OTLP_TRACES_ENDPOINT: ${HNH_OTLP_TRACES_ENDPOINT:-}
+    command: ["uvicorn", "hnh.transport.http.app:app", "--host", "0.0.0.0", "--port", "8080"]
+    ports:
+      - "127.0.0.1:${HNH_HTTP_PORT:-8080}:8080"
+    volumes:
+      - artifact_blobs:/data/blobs
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/readyz', timeout=2)"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  worker:
+    image: hnh-dev:${HNH_IMAGE_TAG:-local}
+    pull_policy: never
+    command: ["hnh-dev-worker"]
+    environment:
+      HNH_DATABASE_URL: *database-url
+      HNH_DEV_TOKEN: ${HNH_DEV_TOKEN:?set HNH_DEV_TOKEN}
+      HNH_DEV_TENANT: ${HNH_DEV_TENANT:-local}
+      HNH_DEV_SUBJECT: ${HNH_DEV_SUBJECT:-developer}
+      HNH_OPENAI_API_KEY: ${HNH_OPENAI_API_KEY:?set HNH_OPENAI_API_KEY}
+      HNH_OPENAI_MODEL: ${HNH_OPENAI_MODEL:?set HNH_OPENAI_MODEL}
+      HNH_OPENAI_BASE_URL: ${HNH_OPENAI_BASE_URL:-https://api.openai.com/v1}
+      HNH_BLOB_ROOT: /data/blobs
+    volumes:
+      - artifact_blobs:/data/blobs
+    depends_on:
+      api:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  artifact_blobs:

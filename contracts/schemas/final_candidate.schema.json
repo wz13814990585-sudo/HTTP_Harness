@@ -1,0 +1,1073 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "HttpOperation": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 2048,
+          "pattern": "^/v1/[^?#\\r\\n\\\\]*$"
+        },
+        "query": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "value": {
+                "type": "string",
+                "maxLength": 8192
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 64,
+          "default": []
+        },
+        "headers": {
+          "type": "object",
+          "properties": {
+            "accept": {
+              "type": "string",
+              "maxLength": 8192,
+              "pattern": "^[^\\r\\n]*$"
+            },
+            "content-type": {
+              "type": "string",
+              "maxLength": 8192,
+              "pattern": "^[^\\r\\n]*$"
+            },
+            "if-match": {
+              "type": "string",
+              "maxLength": 8192,
+              "pattern": "^[^\\r\\n]*$"
+            },
+            "if-none-match": {
+              "type": "string",
+              "maxLength": 8192,
+              "pattern": "^[^\\r\\n]*$"
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "default": {}
+        },
+        "payload": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "json"
+                },
+                "value": {}
+              },
+              "required": [
+                "kind",
+                "value"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "maxLength": 1048576
+                }
+              },
+              "required": [
+                "kind",
+                "text"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "artifact"
+                },
+                "artifact_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                }
+              },
+              "required": [
+                "kind",
+                "artifact_id"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "method",
+        "target"
+      ],
+      "additionalProperties": false,
+      "description": "Model proposal only. Relative URI, no secrets or caller identity. Runtime route/schema/authorization validation is mandatory."
+    },
+    "Limits": {
+      "type": "object",
+      "properties": {
+        "max_model_turns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "max_tool_calls": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "max_wall_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        },
+        "max_cost_microunits": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "RunCreate": {
+      "type": "object",
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "input": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "conversation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "maxItems": 100
+        },
+        "limits": {
+          "$ref": "#/$defs/Limits"
+        }
+      },
+      "required": [
+        "agent_id",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "Accepted": {
+      "type": "object",
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "location": {
+          "type": "string",
+          "pattern": "^/v1/"
+        }
+      },
+      "required": [
+        "resource_id",
+        "location"
+      ],
+      "additionalProperties": false,
+      "description": "Durably accepted reference, not a success claim. Location response header carries the same URI."
+    },
+    "Problem": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        "detail": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "retry_hint": {
+          "type": "string",
+          "enum": [
+            "never",
+            "after_delay",
+            "after_refresh",
+            "reconcile",
+            "ask_user"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "status",
+        "code"
+      ],
+      "additionalProperties": false,
+      "description": "RFC 9457 base fields plus project extensions. Retry hint alone never authorizes replay."
+    },
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "content_url": {
+          "type": "string",
+          "pattern": "^/v1/"
+        },
+        "source_action_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "media_type",
+        "size_bytes",
+        "sha256",
+        "content_url",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "Run": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "running",
+            "waiting_input",
+            "blocked",
+            "cancelling",
+            "succeeded",
+            "failed",
+            "cancelled",
+            "expired"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "agent_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "conversation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "parent_run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "pending_input_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          }
+        },
+        "unresolved_action_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          }
+        },
+        "artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          }
+        },
+        "final_answer": {
+          "type": "string"
+        },
+        "failure": {
+          "$ref": "#/$defs/Problem"
+        },
+        "effective_limits": {
+          "$ref": "#/$defs/Limits"
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "version",
+        "agent_id",
+        "created_at",
+        "updated_at",
+        "pending_input_ids",
+        "unresolved_action_ids",
+        "artifact_ids"
+      ],
+      "additionalProperties": false
+    },
+    "Action": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "proposed",
+            "waiting_input",
+            "ready",
+            "running",
+            "waiting_external",
+            "retry_wait",
+            "outcome_unknown",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "capability_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "capability_revision": {
+          "type": "string"
+        },
+        "request_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "effect_semantics": {
+          "type": "string",
+          "enum": [
+            "read_only",
+            "local_transactional",
+            "remote_idempotent",
+            "unsafe"
+          ]
+        },
+        "attempt_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output": {},
+        "artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          }
+        },
+        "failure": {
+          "$ref": "#/$defs/Problem"
+        }
+      },
+      "required": [
+        "id",
+        "run_id",
+        "status",
+        "version",
+        "capability_id",
+        "capability_revision",
+        "request_hash",
+        "effect_semantics",
+        "attempt_count",
+        "artifact_ids"
+      ],
+      "additionalProperties": false
+    },
+    "Event": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "schema_version": {
+          "const": "1"
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.]*$"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "action_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "event_id",
+        "run_id",
+        "seq",
+        "schema_version",
+        "type",
+        "occurred_at",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "EventPage": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Event"
+          }
+        },
+        "next_after": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "required": [
+        "events",
+        "next_after"
+      ],
+      "additionalProperties": false
+    },
+    "Capability": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        },
+        "path_template": {
+          "type": "string",
+          "pattern": "^/v1/"
+        },
+        "request_media_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "input_schema": {
+          "type": [
+            "object",
+            "boolean"
+          ]
+        },
+        "output_schema": {
+          "type": [
+            "object",
+            "boolean"
+          ]
+        },
+        "effect_semantics": {
+          "type": "string",
+          "enum": [
+            "read_only",
+            "local_transactional",
+            "remote_idempotent",
+            "unsafe"
+          ]
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "requires_approval": {
+          "type": "boolean"
+        },
+        "supported_result_modes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "input_required",
+              "accepted"
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "description",
+        "method",
+        "path_template",
+        "request_media_types",
+        "input_schema",
+        "output_schema",
+        "effect_semantics",
+        "timeout_seconds",
+        "requires_approval",
+        "supported_result_modes"
+      ],
+      "additionalProperties": false,
+      "description": "Public capability descriptor. Trusted execution binding and secret refs are not exposed."
+    },
+    "CapabilityPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Capability"
+          }
+        },
+        "catalog_revision": {
+          "type": "string"
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "catalog_revision",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "InputRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "action_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "approval",
+            "clarification",
+            "external_input"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "answered",
+            "denied",
+            "expired"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "request_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "requested_schema": {
+          "type": "object"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "target_summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "run_id",
+        "kind",
+        "status",
+        "version",
+        "prompt",
+        "request_hash",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "InputResponse": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "const": "approve"
+            },
+            "comment": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "decision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "const": "deny"
+            },
+            "comment": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "decision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "const": "submit"
+            },
+            "values": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "decision",
+            "values"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MessageCreate": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "ConversationCreate": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 256
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "SessionCreate": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "runtime": {
+          "type": "string",
+          "enum": [
+            "python"
+          ]
+        },
+        "profile_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        }
+      },
+      "required": [
+        "run_id",
+        "runtime",
+        "profile_id"
+      ],
+      "additionalProperties": false
+    },
+    "ExecutionSession": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "generation": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "starting",
+            "ready",
+            "busy",
+            "lost",
+            "stopped"
+          ]
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "run_id",
+        "generation",
+        "status",
+        "runtime"
+      ],
+      "additionalProperties": false
+    },
+    "FileRecord": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "path": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "etag": {
+          "type": "string"
+        },
+        "artifact_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        }
+      },
+      "required": [
+        "workspace_id",
+        "path",
+        "revision",
+        "etag",
+        "artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "CancelCreate": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "maxLength": 1024
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "FinalCandidate": {
+      "type": "object",
+      "properties": {
+        "answer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          }
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          }
+        },
+        "acceptance_claims": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "answer",
+        "artifact_ids",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "Reconciliation": {
+      "type": "object",
+      "properties": {
+        "action_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "resolution": {
+          "type": "string",
+          "enum": [
+            "confirmed_applied",
+            "confirmed_not_applied",
+            "confirmed_stopped"
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "minItems": 1
+        },
+        "comment": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "action_id",
+        "resolution",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$ref": "#/$defs/FinalCandidate"
+}

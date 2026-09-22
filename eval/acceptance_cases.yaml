@@ -1,0 +1,683 @@
+spec_version: 0.1.0
+status: unexecuted_acceptance_specification
+cases:
+- id: AT-001
+  stage: P00
+  group: contract
+  title: 有效/无效操作样例
+  tier: contract
+  setup: 加载本包 schema 与 manifest
+  trigger: 逐个验证样例
+  expected: 合法样例通过，故意非法样例被拒绝；不能反向修改样例让校验通过
+  evidence: pytest 输出与 schema 错误路径
+  status: specified_not_implemented
+- id: AT-002
+  stage: P00
+  group: contract
+  title: OpenAPI 与真实路由同步
+  tier: contract
+  setup: 启动实际 ASGI app
+  trigger: 比较生成文档、契约与 operationId
+  expected: 路径/方法/状态码差异明确；未实现路径不得假装可用
+  evidence: OpenAPI validator 与契约 diff
+  status: specified_not_implemented
+- id: AT-003
+  stage: P01
+  group: auth
+  title: 匿名调用被拒绝
+  tier: integration
+  setup: 实际 API 与配置的开发 token
+  trigger: 无 token 创建/读取 Run
+  expected: 401；没有业务状态与任务产生
+  evidence: 响应、DB 行数
+  status: specified_not_implemented
+- id: AT-004
+  stage: P01
+  group: store
+  title: 202 只在事务提交后返回
+  tier: chaos
+  setup: 真实 Postgres，控制准入提交点
+  trigger: 提交前 kill API，再用相同 key 重试
+  expected: 未提交不能出现已受理回执；最终最多一个 Run
+  evidence: 数据库、重试响应、故障时间线
+  status: specified_not_implemented
+- id: AT-005
+  stage: P01
+  group: idempotency
+  title: 并发重复准入
+  tier: integration
+  setup: 相同主体与同一 request fingerprint
+  trigger: 20 个并发相同 key 创建 Run
+  expected: 同一 Run、同一接受回执；无多份初始 jobs
+  evidence: 并发测试结果与唯一约束查询
+  status: specified_not_implemented
+- id: AT-006
+  stage: P01
+  group: idempotency
+  title: 同 key 不同 payload
+  tier: integration
+  setup: 已接受一个目标
+  trigger: 使用相同 key 改写目标
+  expected: 409 idempotency_conflict；原 Run 未变
+  evidence: 两个响应与 DB 指纹
+  status: specified_not_implemented
+- id: AT-007
+  stage: P01
+  group: idempotency
+  title: 重复准入先鉴权
+  tier: security
+  setup: 历史 key 已存在但主体权限被撤销
+  trigger: 再次命中原 key
+  expected: 不得返回越权历史资源；403/404 按既定策略
+  evidence: 授权日志与响应
+  status: specified_not_implemented
+- id: AT-008
+  stage: P01
+  group: state
+  title: 终态不能复活
+  tier: unit
+  setup: 一个已 succeeded 的 Run
+  trigger: 尝试更新为 running 或提交新 Action
+  expected: 状态机拒绝；重新运行必须新 Run
+  evidence: 状态机 property tests
+  status: specified_not_implemented
+- id: AT-009
+  stage: P01
+  group: events
+  title: 事件与快照原子一致
+  tier: chaos
+  setup: 真实 Postgres 与注入事务失败
+  trigger: 写 snapshot 后在 event insert 前触发异常
+  expected: 二者都回滚；版本无孤立变化
+  evidence: DB snapshot/event 查询
+  status: specified_not_implemented
+- id: AT-010
+  stage: P01
+  group: queue
+  title: 重复 job 不是重复副作用
+  tier: integration
+  setup: 同 Action 对应两个唤醒 jobs
+  trigger: 两个 worker 同时处理
+  expected: 最多一个有效准入/dispatch；第二个只检查领域状态
+  evidence: attempt ledger 与测试服务计数
+  status: specified_not_implemented
+- id: AT-011
+  stage: P01
+  group: scope
+  title: 跨主体资源不可见
+  tier: security
+  setup: 两个主体及各自 Run/artifact
+  trigger: 主体 B 读取 A 的路径、事件和输入请求
+  expected: 无泄露，包括是否存在的策略一致
+  evidence: 鉴权测试矩阵
+  status: specified_not_implemented
+- id: AT-012
+  stage: P02
+  group: discovery
+  title: 能力目录分页与稳定顺序
+  tier: integration
+  setup: 固定 catalog revision 与多主体权限
+  trigger: 多次获取目录并逐页读取
+  expected: 稳定排序、不漏不重复、仅有权发现的能力
+  evidence: 目录快照与分页结果
+  status: specified_not_implemented
+- id: AT-013
+  stage: P02
+  group: cache
+  title: 目录缓存按权限隔离
+  tier: security
+  setup: 不同授权的两个主体，开启缓存
+  trigger: 两者依次请求相同目录 URL
+  expected: 缓存不得串权；撤权后 dispatch 被拒绝
+  evidence: 响应差异、cache key 记录
+  status: specified_not_implemented
+- id: AT-014
+  stage: P02
+  group: operation
+  title: 绝对 URL 与身份伪造拒绝
+  tier: security
+  setup: 模型 operation 样例
+  trigger: 请求 http://169.254.169.254 或添加 Authorization/actor
+  expected: schema/binding 阶段拒绝，不产生外部请求
+  evidence: schema、outbound stub 调用计数
+  status: specified_not_implemented
+- id: AT-015
+  stage: P02
+  group: resource
+  title: GET 无业务写入
+  tier: integration
+  setup: 只读资源、计数器和模型 provider spy
+  trigger: GET 文件/目录/状态
+  expected: 不调用模型生成、不发布、不执行代码；审计允许
+  evidence: provider 调用计数、文件版本
+  status: specified_not_implemented
+- id: AT-016
+  stage: P02
+  group: resource
+  title: 条件写竞争
+  tier: integration
+  setup: 文件版本 v1，两次并发 If-Match:v1
+  trigger: 提交不同内容
+  expected: 一个成功，一个412；不存在静默覆盖
+  evidence: ETag/版本指针与 blob 内容
+  status: specified_not_implemented
+- id: AT-017
+  stage: P02
+  group: resource
+  title: 新建与覆盖前提
+  tier: integration
+  setup: 无文件及已有文件场景
+  trigger: 缺前提、双前提、If-None-Match:*
+  expected: 分别按契约拒绝/创建；前提检查在事务内
+  evidence: 真实 HTTP 与 DB 版本
+  status: specified_not_implemented
+- id: AT-018
+  stage: P02
+  group: paths
+  title: 路径穿越和 symlink
+  tier: security
+  setup: 受管工作区与越界诱饵文件
+  trigger: ../、双编码、绝对路径、NUL、symlink 等输入
+  expected: 不能访问/覆盖工作区外对象；绑定前规范化
+  evidence: 攻击输入集、宿主诱饵校验
+  status: specified_not_implemented
+- id: AT-019
+  stage: P02
+  group: dispatch
+  title: inproc 和 HTTP 相同准入
+  tier: integration
+  setup: 同 capability 的两种 transport
+  trigger: 等价读写操作分别执行
+  expected: 权限/预算/指纹/结果规则等价，传输日志不伪造
+  evidence: 参数化测试、两种 exchange 记录
+  status: specified_not_implemented
+- id: AT-020
+  stage: P02
+  group: dispatch
+  title: 一个逻辑操作只有一个 Action
+  tier: integration
+  setup: Runner 发起异步执行
+  trigger: Gateway 准入后 worker execute_bound
+  expected: 不得递归调用本地公开准入 API；只有一个 Action
+  evidence: Action 树与 HTTP spy
+  status: specified_not_implemented
+- id: AT-021
+  stage: P02
+  group: schema
+  title: 第二层 capability 校验
+  tier: integration
+  setup: 通用 http_request schema 合法但工具参数错误
+  trigger: 错误类型/缺字段/超深结构
+  expected: 拒绝并返回稳定错误；没有 dispatch
+  evidence: 具体 capability schema 错误
+  status: specified_not_implemented
+- id: AT-022
+  stage: P03
+  group: model
+  title: 完整模型输出先持久化
+  tier: chaos
+  setup: scripted provider 输出一个写动作
+  trigger: 在响应持久化前与后分别 kill worker
+  expected: 未持久化的流片段不执行；已保存响应恢复不重复建 Action
+  evidence: model_calls/action slot/外部计数
+  status: specified_not_implemented
+- id: AT-023
+  stage: P03
+  group: model
+  title: 无效格式修复有上限
+  tier: integration
+  setup: 连续返回坏 JSON 或非法 operation 的 provider
+  trigger: 启动 Run
+  expected: 达到配置上限后明确失败；不无限重试
+  evidence: turn ledger、usage 与终态
+  status: specified_not_implemented
+- id: AT-024
+  stage: P03
+  group: completion
+  title: 模型不能空口完成
+  tier: integration
+  setup: provider 输出 completed，但必需 artifact 缺失
+  trigger: 执行 CompletionGate
+  expected: 不进入 succeeded，报告缺失验收证据
+  evidence: FinalCandidate 与 gate 记录
+  status: specified_not_implemented
+- id: AT-025
+  stage: P03
+  group: completion
+  title: 验收与回归区分
+  tier: integration
+  setup: 目标输出已满足，但无关旧测试失败
+  trigger: 提交验证结果
+  expected: 分别记录 acceptance/regression；不虚构新需求未完成
+  evidence: 验证报告字段
+  status: specified_not_implemented
+- id: AT-026
+  stage: P03
+  group: context
+  title: 压缩后可取原始证据
+  tier: integration
+  setup: 上下文超阈值，原始输出很大
+  trigger: 压缩并继续需要旧资料的任务
+  expected: 保留受权引用与版本，能重新读取；秘密不进入摘要
+  evidence: context snapshot/artifact refs
+  status: specified_not_implemented
+- id: AT-027
+  stage: P03
+  group: events
+  title: SSE 断开后续传
+  tier: integration
+  setup: 已提交20个事件，客户端读到seq10
+  trigger: 断开并带 Last-Event-ID:10 重连
+  expected: 从11起发送保留事件，客户端幂等消费；不取消 Run
+  evidence: SSE capture/DB event seq
+  status: specified_not_implemented
+- id: AT-028
+  stage: P03
+  group: events
+  title: 事件游标边界
+  tier: integration
+  setup: 配置短保留并构造未来游标
+  trigger: 请求过期和未来游标
+  expected: 发流前分别410/409，提供可恢复读取路径
+  evidence: 真实响应头/体
+  status: specified_not_implemented
+- id: AT-029
+  stage: P03
+  group: budgets
+  title: 预算并发预留
+  tier: integration
+  setup: 剩余预算不足供两个调用
+  trigger: 并发请求 model/tool 配额
+  expected: 不能透支，取消的预留正确释放；实际计费独立记录
+  evidence: budget ledger invariants
+  status: specified_not_implemented
+- id: AT-030
+  stage: P03
+  group: model
+  title: 真实模型 smoke
+  tier: live_provider
+  setup: 有明确配置的真实 provider/key，不开 hosted side-effect tools
+  trigger: 实际完成只读→变换→保存产物任务
+  expected: 真实 usage、产物、完成依据；缺 key 则 blocked_environment 不是 pass
+  evidence: 脱敏真实调用报告
+  status: specified_not_implemented
+- id: AT-031
+  stage: P04
+  group: sandbox
+  title: 禁用 host exec 的硬边界
+  tier: security
+  setup: 未配置隔离 broker
+  trigger: 请求执行 Python/Shell
+  expected: 拒绝 execution_unavailable；不能降级为宿主 exec
+  evidence: mock/真实宿主执行 spy
+  status: specified_not_implemented
+- id: AT-032
+  stage: P04
+  group: sandbox
+  title: 隔离资源限制
+  tier: security
+  setup: 真实非 root sandbox
+  trigger: 运行无限循环、超量内存/进程、超长输出
+  expected: 按限制终止且结果可追踪；宿主服务仍可响应
+  evidence: 容器/进程状态、资源监控
+  status: specified_not_implemented
+- id: AT-033
+  stage: P04
+  group: sandbox
+  title: 网络出口不能绕过
+  tier: security
+  setup: 无网络权限的执行会话
+  trigger: Python requests/curl 访问公网、metadata、宿主服务
+  expected: 全部被网络边界拒绝，不能绕过工具网关
+  evidence: 受控网络目标计数
+  status: specified_not_implemented
+- id: AT-034
+  stage: P04
+  group: session
+  title: 持续 Python 会话
+  tier: integration
+  setup: 同一 sandbox generation
+  trigger: cell1 x=42；cell2 print(x+1)
+  expected: 43；同时提交 cell 不破坏串行会话
+  evidence: 真实 execution receipt
+  status: specified_not_implemented
+- id: AT-035
+  stage: P04
+  group: session
+  title: 同名重建不是原会话
+  tier: chaos
+  setup: 已有变量的 pythond session
+  trigger: 杀进程并以同名重建
+  expected: generation 改变；旧依赖 blocked/environment_lost，不伪称恢复变量
+  evidence: session records与错误结果
+  status: specified_not_implemented
+- id: AT-036
+  stage: P04
+  group: pythond
+  title: HTTP200也可能执行失败
+  tier: integration
+  setup: pythond 抛出 Python exception
+  trigger: Adapter 读取响应和上游错误标识
+  expected: 标记工具执行失败，不依据200宣告成功
+  evidence: 上游原始脱敏回执、Action结果
+  status: specified_not_implemented
+- id: AT-037
+  stage: P04
+  group: artifact
+  title: blob提交故障
+  tier: chaos
+  setup: 真实 blob directory 与 DB
+  trigger: blob落盘后metadata提交前kill
+  expected: 可有 orphan 被GC；不得存在已发布但无内容的引用
+  evidence: blob/DB/GC记录
+  status: specified_not_implemented
+- id: AT-038
+  stage: P04
+  group: sandbox
+  title: 禁止不可信 pickle
+  tier: security
+  setup: 开放文本代码接口且关闭反序列化导入
+  trigger: 提交恶意pickle导入请求
+  expected: 入口拒绝，不调用 pickle.load/loads
+  evidence: 拒绝响应/调用spy
+  status: specified_not_implemented
+- id: AT-039
+  stage: P05
+  group: approval
+  title: 精确绑定审批
+  tier: security
+  setup: 冻结待发布请求A
+  trigger: 审批A后把目标/内容/资源版本改B
+  expected: B不能使用A批准；重新生成必要 InputRequest
+  evidence: request_hash与approval记录
+  status: specified_not_implemented
+- id: AT-040
+  stage: P05
+  group: approval
+  title: 审批一次消费与过期
+  tier: integration
+  setup: 同一个待审请求
+  trigger: 两个用户响应并发、之后过期重放
+  expected: 一个合法决策被接受；无重复副作用；过期不能执行
+  evidence: version/CAS/外部计数
+  status: specified_not_implemented
+- id: AT-041
+  stage: P05
+  group: approval
+  title: 审批等待跨重启
+  tier: chaos
+  setup: Run waiting_input
+  trigger: 重启 API/worker再提交有效响应
+  expected: 保持等待和原请求hash，批准后继续一次
+  evidence: 前后状态与执行记录
+  status: specified_not_implemented
+- id: AT-042
+  stage: P05
+  group: policy
+  title: 派发前撤权
+  tier: security
+  setup: Action ready 且曾被许可
+  trigger: revoke权限后worker准备dispatch
+  expected: 阻止dispatch；已批准不等于永久许可
+  evidence: policy revision与outbound计数
+  status: specified_not_implemented
+- id: AT-043
+  stage: P05
+  group: recovery
+  title: 外部已成功但响应丢失
+  tier: chaos
+  setup: 具有计数和对账端点的测试服务
+  trigger: 服务产生副作用后断开响应
+  expected: unsafe不重发；outcome_unknown；查询后提交真实结果
+  evidence: 外部计数=1、状态时间线
+  status: specified_not_implemented
+- id: AT-044
+  stage: P05
+  group: recovery
+  title: 下游幂等重试
+  tier: chaos
+  setup: 支持业务key的测试服务
+  trigger: 首个请求成功但响应丢失然后重试
+  expected: 同一下游key、一个业务效果、允许多个attempt
+  evidence: server dedupe ledger
+  status: specified_not_implemented
+- id: AT-045
+  stage: P05
+  group: recovery
+  title: 没有对账不能伪造答案
+  tier: chaos
+  setup: 不支持幂等/查询的写服务
+  trigger: 丢失成功响应
+  expected: blocked/outcome_unknown；人工对账入口受限；不依据LLM猜测成功
+  evidence: blocked理由、attempt数量
+  status: specified_not_implemented
+- id: AT-046
+  stage: P05
+  group: lease
+  title: 旧worker复活
+  tier: chaos
+  setup: W1失去lease，W2接管
+  trigger: W1迟到提交结果或试图新dispatch
+  expected: 旧epoch不能写新状态或发新业务；外部效果另行对账
+  evidence: fencing失败与effect ledger
+  status: specified_not_implemented
+- id: AT-047
+  stage: P05
+  group: cancel
+  title: 取消与完成并发
+  tier: integration
+  setup: 同Run终态前
+  trigger: 并发提交取消和完成
+  expected: 首个合法已提交版本获胜；无终态复活/取消后新dispatch
+  evidence: 并发重复试验与版本记录
+  status: specified_not_implemented
+- id: AT-048
+  stage: P05
+  group: cancel
+  title: 取消ACK不等于停止
+  tier: integration
+  setup: 远端慢任务只ACK cancel
+  trigger: 请求取消后立刻查状态
+  expected: 仍等待确认；未知结果不得标干净cancelled
+  evidence: cancel receipt与真实远端任务状态
+  status: specified_not_implemented
+- id: AT-049
+  stage: P05
+  group: retry
+  title: 状态码不能单独决定重试
+  tier: integration
+  setup: unsafe服务返回500但已产生效果
+  trigger: 收到500
+  expected: 按effect/证据处理，不自动循环重发
+  evidence: external counter与retry decision
+  status: specified_not_implemented
+- id: AT-050
+  stage: P05
+  group: ssrf
+  title: DNS/重定向绕过被拒绝
+  tier: security
+  setup: 受控DNS与跳转服务
+  trigger: 允许host重定向privateIP，DNS变化，跨origin跳转
+  expected: 拒绝不合规目的地，秘密不跨源；工具与sandbox路径一致
+  evidence: 网络捕获与redaction报告
+  status: specified_not_implemented
+- id: AT-051
+  stage: P05
+  group: logging
+  title: 日志与上下文脱敏
+  tier: security
+  setup: 请求/结果含假密钥、Cookie、opaque state
+  trigger: 查看events/traces/context/export
+  expected: 秘密不泄露，必要审计以引用受控保存
+  evidence: secret canary扫描
+  status: specified_not_implemented
+- id: AT-052
+  stage: P05
+  group: recovery
+  title: 版本不兼容恢复被阻断
+  tier: chaos
+  setup: 旧checkpoint引用已移除capability版本
+  trigger: 重启恢复
+  expected: migration_required，不静默使用新工具/新权限
+  evidence: checkpoint版本与阻塞事件
+  status: specified_not_implemented
+- id: AT-053
+  stage: P06
+  group: mcp
+  title: 现代profile真实互操作
+  tier: external_integration
+  setup: 实际官方SDK与真实现代MCP server
+  trigger: discover/list/call
+  expected: 2026-07-28语义正确，header/body一致，不混旧session
+  evidence: SDK lock版本与interop报告
+  status: specified_not_implemented
+- id: AT-054
+  stage: P06
+  group: mcp
+  title: 新旧探测不产生副作用
+  tier: external_integration
+  setup: 一个现代和一个legacy server
+  trigger: 连接/回退
+  expected: 只用安全discovery探测；legacy能力明确标识
+  evidence: RPC抓取与写工具计数
+  status: specified_not_implemented
+- id: AT-055
+  stage: P06
+  group: mcp
+  title: MCP结果四分法
+  tier: integration
+  setup: 分别返回protocol error、isError、input_required、task
+  trigger: 调用adapter
+  expected: 映射各自状态，不把HTTP200当成功，不吞structuredContent合法数组/标量
+  evidence: 结果转换tests
+  status: specified_not_implemented
+- id: AT-056
+  stage: P06
+  group: mcp
+  title: MRTR跨重启
+  tier: external_integration
+  setup: 真实/协议一致fixture返回input_required
+  trigger: 重启后补充响应
+  expected: 新RPC request ID、同逻辑Action、保留opaque requestState，不能被LLM改写
+  evidence: request/continuation ledger
+  status: specified_not_implemented
+- id: AT-057
+  stage: P06
+  group: mcp
+  title: Task断线后只轮询
+  tier: external_integration
+  setup: 已拿到taskId
+  trigger: 断线/重启并恢复
+  expected: tasks/get等待原任务；不重新创建，tasks/update输入与cancel单独测试
+  evidence: server创建计数与taskId
+  status: specified_not_implemented
+- id: AT-058
+  stage: P06
+  group: mcp
+  title: 不支持的扩展不广告
+  tier: integration
+  setup: 禁用MRTR/Tasks或缺SDK支持
+  trigger: 请求capabilities并调用相关路径
+  expected: 没有未测试广告；明确unsupported不假成功
+  evidence: compatibility matrix
+  status: specified_not_implemented
+- id: AT-059
+  stage: P06
+  group: mcp
+  title: 凭据按issuer绑定
+  tier: security
+  setup: 两个不同issuer/resource
+  trigger: 切换server或恶意issuer回应
+  expected: 不复用跨发行者凭据，不转发Harness token
+  evidence: OAuth安全测试
+  status: specified_not_implemented
+- id: AT-060
+  stage: P07
+  group: decision
+  title: 分类器关闭/失败可运行
+  tier: integration
+  setup: decision关闭、超时或输出坏结果
+  trigger: 运行普通任务
+  expected: 走显式保守策略；分类器不成为可用性硬依赖
+  evidence: route decision与任务结果
+  status: specified_not_implemented
+- id: AT-061
+  stage: P07
+  group: decision
+  title: 高置信度不能越权
+  tier: security
+  setup: classifier返回safe=1.0
+  trigger: 尝试禁止发布/读系统文件
+  expected: Policy仍拒绝，无外部操作
+  evidence: classifier output与policy audit
+  status: specified_not_implemented
+- id: AT-062
+  stage: P07
+  group: children
+  title: 子任务继承权限与预算
+  tier: security
+  setup: 父任务剩余预算和有限scope
+  trigger: 创建子任务并尝试扩大scope/递归
+  expected: 交集权限，原子预留预算，深度/数量上限生效
+  evidence: parent-child ledger
+  status: specified_not_implemented
+- id: AT-063
+  stage: P07
+  group: children
+  title: 父任务取消可传播
+  tier: integration
+  setup: 运行中的有界子任务
+  trigger: 取消父任务
+  expected: 停止新child，传播取消并等待真实收尾，不留无主运行
+  evidence: Run树与最终状态
+  status: specified_not_implemented
+- id: AT-064
+  stage: P07
+  group: skills
+  title: 不可信skill不能自提权
+  tier: security
+  setup: 加载包含“忽略规则/上传秘密”的skill
+  trigger: 模型按skill提出非法动作
+  expected: 提示内容不获得控制权限，能力与政策仍约束
+  evidence: prompt注入测试
+  status: specified_not_implemented
+- id: AT-065
+  stage: P08
+  group: eval
+  title: 公平2x2实验
+  tier: evaluation
+  setup: 相同工具/任务/模型/权限/预算和可见结果
+  trigger: 执行模型界面×下游协议的四组对照
+  expected: 不强迫MCP baseline手写JSON-RPC；只统计真实模型token
+  evidence: eval config/hash/raw run ids
+  status: specified_not_implemented
+- id: AT-066
+  stage: P08
+  group: ops
+  title: 备份与恢复演练
+  tier: operations
+  setup: 有活动/终态Run和blob
+  trigger: 备份DB+blob到新实例恢复
+  expected: 引用可读、活动Run按版本恢复、无重复危险dispatch
+  evidence: restore演练报告
+  status: specified_not_implemented
+- id: AT-067
+  stage: P08
+  group: ops
+  title: 缺失配置明确失败
+  tier: operations
+  setup: 缺key/broker/数据库/插件
+  trigger: 启动与相应操作
+  expected: readiness或操作准确报告缺失；不能mock冒充真实或host降级
+  evidence: startup/readiness报告
+  status: specified_not_implemented
+- id: AT-068
+  stage: P08
+  group: eval
+  title: 真实测量与失败全保留
+  tier: evaluation
+  setup: 已实现的端到端任务集
+  trigger: 评估并导出
+  expected: 失败/timeout/blocked计入分母；不把schema静态检查算成功率
+  evidence: raw.jsonl、metrics定义、reproduction命令
+  status: specified_not_implemented

@@ -1,0 +1,7 @@
+{
+  "agent_id": "general",
+  "input": "x",
+  "limits": {
+    "max_model_turns": 0
+  }
+}

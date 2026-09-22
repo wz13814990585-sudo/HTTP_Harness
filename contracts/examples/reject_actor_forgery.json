@@ -1,0 +1,5 @@
+{
+  "method": "GET",
+  "target": "/v1/capabilities",
+  "actor": "admin"
+}

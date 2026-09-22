@@ -1,0 +1,35 @@
+{
+  "id": "workspace.file.read",
+  "revision": "1",
+  "description": "读取当前授权工作区内的文件版本。",
+  "method": "GET",
+  "path_template": "/v1/workspaces/{workspace_id}/files/{file_path}",
+  "request_media_types": [
+    "application/json"
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "workspace_id": {
+        "type": "string"
+      },
+      "file_path": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "workspace_id",
+      "file_path"
+    ],
+    "additionalProperties": false
+  },
+  "output_schema": {
+    "type": "string"
+  },
+  "effect_semantics": "read_only",
+  "timeout_seconds": 10,
+  "requires_approval": false,
+  "supported_result_modes": [
+    "complete"
+  ]
+}

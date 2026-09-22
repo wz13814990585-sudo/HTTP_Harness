@@ -1,0 +1,12 @@
+{
+  "answer": "已生成总数报告，文件见产物。",
+  "artifact_ids": [
+    "artifact-demo"
+  ],
+  "evidence_ids": [
+    "evt-9"
+  ],
+  "acceptance_claims": [
+    "报告存在且包含已核对的计算结果"
+  ]
+}

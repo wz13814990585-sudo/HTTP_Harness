@@ -1,0 +1,546 @@
+{
+  "report_type": "design_package_static_validation",
+  "created_at_utc": "2026-09-22T17:55:28.095185+00:00",
+  "scope": "JSON/YAML parsing, JSON Schema meta-validation, positive/negative examples, local refs, basic OpenAPI shape, state machines, planned stages and document consistency only.",
+  "not_performed": [
+    "Harness implementation tests",
+    "Database/concurrency/recovery tests",
+    "Sandbox/security penetration tests",
+    "Live model/provider calls",
+    "MCP SDK/server interoperability",
+    "Full OpenAPI standard conformance validator",
+    "Performance benchmarks"
+  ],
+  "summary": {
+    "checks": 104,
+    "passed": 104,
+    "failed": 0,
+    "schema_definitions": 22,
+    "example_cases": 12,
+    "openapi_paths": 22,
+    "stages": 9,
+    "unexecuted_acceptance_specifications": 68
+  },
+  "checks": [
+    {
+      "name": "parse:.github/workflows/ci.yml",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/cryptography-50.0.1.dist-info/sboms/cryptography-rust.cyclonedx.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/cryptography-50.0.1.dist-info/sboms/sbom.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/http_native_harness-0.1.0.dev0.dist-info/direct_url.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/http_native_harness-0.1.0.dev0.dist-info/uv_build.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/http_native_harness-0.1.0.dev0.dist-info/uv_cache.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/jsonschema/benchmarks/issue232/issue.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft201909/metaschema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/metaschema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft3/metaschema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft4/metaschema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft6/metaschema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft7/metaschema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/openapi_schema_validator/schemas/oas3.1/metaschema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/openapi_schema_validator/schemas/oas3.2/dialect/2025-09-17.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/openapi_schema_validator/schemas/oas3.2/meta/2025-09-17.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/openapi_spec_validator/resources/schemas/v2.0/schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/openapi_spec_validator/resources/schemas/v3.0/schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/openapi_spec_validator/resources/schemas/v3.0.0/schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/openapi_spec_validator/resources/schemas/v3.1/schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/openapi_spec_validator/resources/schemas/v3.2/schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/pydantic_core-2.46.5.dist-info/sboms/pydantic-core.cyclonedx.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/rpds_py-2026.6.3.dist-info/sboms/rpds-py.cyclonedx.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:.venv/lib/python3.12/site-packages/ruff-0.16.8.dist-info/sboms/ruff.cyclonedx.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:config/harness.example.yaml",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/approval.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/capability.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/event.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/final.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/http_execute.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/http_read.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/manifest.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/reject_absolute_target.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/reject_actor_forgery.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/reject_model_auth.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/reject_zero_budget.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/run_create.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/examples/run_waiting.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/openapi.yaml",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/action.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/capability.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/contracts.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/event.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/final_candidate.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/http_operation.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/input_request.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/input_response.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/run.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/schemas/run_create.schema.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:contracts/state_machines.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:deploy/dev/compose.yaml",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:eval/acceptance_cases.yaml",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:eval/experiment_design.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "parse:prompts/taskboard.json",
+      "status": "passed",
+      "detail": "True"
+    },
+    {
+      "name": "schema:action.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "schema:capability.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "schema:contracts.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 6 local references resolve"
+    },
+    {
+      "name": "schema:event.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "schema:final_candidate.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "schema:http_operation.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "schema:input_request.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "schema:input_response.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "schema:run.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "schema:run_create.schema.json",
+      "status": "passed",
+      "detail": "JSON Schema 2020-12 meta-schema valid; 7 local references resolve"
+    },
+    {
+      "name": "definition:HttpOperation",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Limits",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:RunCreate",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Accepted",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Problem",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Artifact",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Run",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Action",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Event",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:EventPage",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Capability",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:CapabilityPage",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:InputRequest",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:InputResponse",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:MessageCreate",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:ConversationCreate",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:SessionCreate",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:ExecutionSession",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:FileRecord",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:CancelCreate",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:FinalCandidate",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "definition:Reconciliation",
+      "status": "passed",
+      "detail": "OK"
+    },
+    {
+      "name": "example:contracts/examples/http_read.json",
+      "status": "passed",
+      "detail": "Positive example accepted"
+    },
+    {
+      "name": "example:contracts/examples/http_execute.json",
+      "status": "passed",
+      "detail": "Positive example accepted"
+    },
+    {
+      "name": "example:contracts/examples/run_create.json",
+      "status": "passed",
+      "detail": "Positive example accepted"
+    },
+    {
+      "name": "example:contracts/examples/run_waiting.json",
+      "status": "passed",
+      "detail": "Positive example accepted"
+    },
+    {
+      "name": "example:contracts/examples/event.json",
+      "status": "passed",
+      "detail": "Positive example accepted"
+    },
+    {
+      "name": "example:contracts/examples/approval.json",
+      "status": "passed",
+      "detail": "Positive example accepted"
+    },
+    {
+      "name": "example:contracts/examples/final.json",
+      "status": "passed",
+      "detail": "Positive example accepted"
+    },
+    {
+      "name": "example:contracts/examples/capability.json",
+      "status": "passed",
+      "detail": "Positive example accepted"
+    },
+    {
+      "name": "example:contracts/examples/reject_absolute_target.json",
+      "status": "passed",
+      "detail": "Negative example correctly rejected: 'http://169.254.169.254/latest/meta-data' does not match '^/v1/[^?#\\\\r\\\\n\\\\\\\\]*$'"
+    },
+    {
+      "name": "example:contracts/examples/reject_model_auth.json",
+      "status": "passed",
+      "detail": "Negative example correctly rejected: Additional properties are not allowed ('authorization' was unexpected)"
+    },
+    {
+      "name": "example:contracts/examples/reject_actor_forgery.json",
+      "status": "passed",
+      "detail": "Negative example correctly rejected: Additional properties are not allowed ('actor' was unexpected)"
+    },
+    {
+      "name": "example:contracts/examples/reject_zero_budget.json",
+      "status": "passed",
+      "detail": "Negative example correctly rejected: 0 is less than the minimum of 1"
+    },
+    {
+      "name": "openapi:local_refs",
+      "status": "passed",
+      "detail": "70 local references resolve"
+    },
+    {
+      "name": "openapi:basic_contract_structure",
+      "status": "passed",
+      "detail": "22 paths; 23 operations; route/auth/idempotency/CAS checks passed. Not a complete OpenAPI validator."
+    },
+    {
+      "name": "state_machines:consistency",
+      "status": "passed",
+      "detail": "Run/Action enums, reachability, terminal immutability and declared unknown-effect guard match"
+    },
+    {
+      "name": "roadmap:acceptance_coverage",
+      "status": "passed",
+      "detail": "9 ordered stages and 68 unexecuted acceptance specifications have valid cross-references"
+    },
+    {
+      "name": "config:safety_declarations",
+      "status": "passed",
+      "detail": "Configured safety switches checked; runtime enforcement not tested"
+    },
+    {
+      "name": "documents:completeness",
+      "status": "passed",
+      "detail": "18 required documents; 27 explicit local markdown links resolve"
+    }
+  ]
+}

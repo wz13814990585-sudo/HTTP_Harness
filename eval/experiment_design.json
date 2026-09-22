@@ -1,0 +1,56 @@
+{
+  "version": "0.1.0",
+  "status": "planned_not_executed",
+  "hypothesis": "在相同能力信息与权限下，HTTP semantic operation 是否改善模型工具使用；不预设胜出。",
+  "factors": {
+    "model_surface": [
+      "native_function_schema",
+      "http_semantic_operation"
+    ],
+    "downstream": [
+      "native_http",
+      "mcp_adapter"
+    ]
+  },
+  "independent_experiments": [
+    "inproc versus localhost_http transport overhead",
+    "full catalog versus on_demand discovery",
+    "classifier off versus on",
+    "single run versus bounded child runs"
+  ],
+  "controls": [
+    "same pinned model/settings",
+    "same task seeds and tool behavior",
+    "same schemas semantics and permissions",
+    "same budget and timeout",
+    "same acceptance evidence",
+    "equal result content",
+    "record actual input/output tokens"
+  ],
+  "forbidden_confounds": [
+    "force MCP baseline to emit JSON-RPC",
+    "count hidden transport bytes as model tokens",
+    "enable discovery only in favored arm",
+    "different models per arm",
+    "drop failed/blocked runs"
+  ],
+  "metrics": [
+    "evidence_based_completion",
+    "false_completion",
+    "invalid_operation",
+    "argument_error",
+    "unsafe_duplicate_effects",
+    "permission_violations",
+    "recovery_correctness",
+    "model_input_output_tokens",
+    "model_usage_cost",
+    "harness_overhead_ms_p50_p95",
+    "end_to_end_latency_ms_p50_p95"
+  ],
+  "notes": [
+    "Every effect-safety test must pass; no percentage exception for duplicate writes.",
+    "Record raw data and uncertainty; no fixed target success rate without baseline.",
+    "A local seeded suite is not a public benchmark.",
+    "LLM providers may be nondeterministic even with nominal temperature zero."
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "run-demo",
+  "status": "waiting_input",
+  "version": 8,
+  "agent_id": "general",
+  "created_at": "2026-09-22T00:00:00Z",
+  "updated_at": "2026-09-22T00:02:00Z",
+  "pending_input_ids": [
+    "input-demo"
+  ],
+  "unresolved_action_ids": [],
+  "artifact_ids": [
+    "artifact-demo"
+  ]
+}

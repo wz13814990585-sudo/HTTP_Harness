@@ -1,0 +1,10 @@
+{
+  "agent_id": "general",
+  "input": "读取样例数据，计算总数并生成报告。对外发布前请我批准。",
+  "workspace_id": "ws-demo",
+  "limits": {
+    "max_model_turns": 12,
+    "max_tool_calls": 24,
+    "max_wall_seconds": 600
+  }
+}

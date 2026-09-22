@@ -1,0 +1,677 @@
+{
+  "report_type": "acceptance_execution_status",
+  "generated_on": "2026-09-23",
+  "scope": "Runtime acceptance evidence. Design-package static checks are tracked separately and are not counted as acceptance execution.",
+  "summary": {
+    "passed": 65,
+    "failed": 0,
+    "blocked_environment": 3,
+    "not_run": 0,
+    "total": 68
+  },
+  "cases": [
+    {
+      "id": "AT-001",
+      "stage": "P00",
+      "status": "passed",
+      "tests": [
+        "tests/contract/test_examples.py::test_contract_example_matches_manifest"
+      ],
+      "command": ".venv/bin/pytest tests/contract/test_examples.py",
+      "evidence": "12 manifest cases passed: 8 positive examples accepted and 4 deliberate negative examples rejected."
+    },
+    {
+      "id": "AT-002",
+      "stage": "P00",
+      "status": "passed",
+      "tests": [
+        "tests/contract/test_openapi_surface.py::test_target_contract_is_valid_openapi_311",
+        "tests/contract/test_openapi_surface.py::test_generated_openapi_matches_actual_schema_routes",
+        "tests/contract/test_openapi_surface.py::test_only_implemented_target_routes_are_advertised",
+        "tests/contract/test_openapi_surface.py::test_sse_route_advertises_event_stream_media_type",
+        "tests/unit/test_api.py::test_run_route_fails_closed_without_database"
+      ],
+      "command": ".venv/bin/pytest tests/contract/test_openapi_surface.py tests/unit/test_api.py",
+      "evidence": "Target OpenAPI 3.1.1 validates; runtime schema equals actual routes after explicit Starlette catch-all normalization; the P05 runtime advertises exactly 21 implemented target operations, declares SSE as text/event-stream, and advertises no unsupported target operation."
+    },
+    {
+      "id": "AT-003",
+      "stage": "P01",
+      "status": "passed",
+      "tests": ["tests/integration/test_p01_postgres.py::test_at_003_anonymous_run_calls_leave_no_business_state"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p01_postgres.py -vv",
+      "evidence": "Anonymous POST/GET returned 401 and Run/Event/Job/Idempotency/Budget tables remained empty."
+    },
+    {
+      "id": "AT-004",
+      "stage": "P01",
+      "status": "passed",
+      "tests": ["tests/integration/test_p01_postgres.py::test_at_004_transaction_failure_never_returns_a_phantom_acceptance"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p01_postgres.py -vv",
+      "evidence": "Injected pre-commit process-loss equivalent rolled back all rows; retry created exactly one committed Run/Event/Job."
+    },
+    {
+      "id": "AT-005",
+      "stage": "P01",
+      "status": "passed",
+      "tests": ["tests/integration/test_p01_postgres.py::test_at_005_twenty_concurrent_replays_create_one_run"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p01_postgres.py -vv",
+      "evidence": "20 concurrent admissions returned one Run ID with one Run, Event, Job, Budget, and Idempotency row."
+    },
+    {
+      "id": "AT-006",
+      "stage": "P01",
+      "status": "passed",
+      "tests": ["tests/integration/test_p01_postgres.py::test_at_006_same_key_with_changed_payload_is_conflict"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p01_postgres.py -vv",
+      "evidence": "Changed payload with the same scoped key returned 409 idempotency_conflict and retained the original goal."
+    },
+    {
+      "id": "AT-007",
+      "stage": "P01",
+      "status": "passed",
+      "tests": ["tests/integration/test_p01_postgres.py::test_at_007_replay_rechecks_current_scope_before_history"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p01_postgres.py -vv",
+      "evidence": "After write-scope revocation, replay returned 403 without the historical resource ID."
+    },
+    {
+      "id": "AT-008",
+      "stage": "P01",
+      "status": "passed",
+      "tests": [
+        "tests/unit/test_states.py::test_terminal_run_cannot_revive",
+        "tests/integration/test_p01_postgres.py::test_at_008_terminal_run_rejects_new_action"
+      ],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "All terminal-to-any-state transitions were rejected and a succeeded Run refused a new admitted Action."
+    },
+    {
+      "id": "AT-009",
+      "stage": "P01",
+      "status": "passed",
+      "tests": ["tests/integration/test_p01_postgres.py::test_at_009_snapshot_and_event_rollback_together"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p01_postgres.py -vv",
+      "evidence": "Injected failure after snapshot flush rolled back status, version, and event sequence together."
+    },
+    {
+      "id": "AT-010",
+      "stage": "P01",
+      "status": "passed",
+      "tests": ["tests/integration/test_p01_postgres.py::test_at_010_duplicate_wakeups_admit_one_action_attempt"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p01_postgres.py -vv",
+      "evidence": "Two leased wakeups raced; the Action ready-to-running CAS allowed one attempt ledger row. No external effect was dispatched in P01."
+    },
+    {
+      "id": "AT-011",
+      "stage": "P01",
+      "status": "passed",
+      "tests": ["tests/integration/test_p01_postgres.py::test_at_011_foreign_and_missing_runs_have_same_response"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p01_postgres.py -vv",
+      "evidence": "A foreign Run and a nonexistent Run returned identical 404 problem bodies to the other subject."
+    },
+    {
+      "id": "AT-012",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_012_catalog_pagination_is_stable_and_subject_filtered"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Repeated paginated reads used one catalog revision, stable ID ordering, no duplicates, and returned only capabilities whose execution scope the subject holds."
+    },
+    {
+      "id": "AT-013",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_013_catalog_cache_is_identity_scoped_and_dispatch_reauthorizes"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Catalog cache keys differed by tenant/subject/scope fingerprint; a revoked workspace write scope returned 403 before dispatch and created no workspace entry."
+    },
+    {
+      "id": "AT-014",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_014_absolute_targets_and_identity_forgery_fail_before_dispatch"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Absolute metadata URL, Authorization header, and actor field were rejected by the untrusted operation schema; dispatch count and Action rows remained zero."
+    },
+    {
+      "id": "AT-015",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_015_get_is_side_effect_free"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Two GETs returned identical bytes/ETag and did not change Action count, Artifact count, file version, or adapter dispatch count."
+    },
+    {
+      "id": "AT-016",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_016_concurrent_if_match_has_one_winner"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Two threads submitted different content under the same v1 ETag; PostgreSQL advisory/row locking produced one 200 and one 412, revision 2, and exactly two immutable artifacts including v1."
+    },
+    {
+      "id": "AT-017",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_017_create_and_overwrite_preconditions"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Missing precondition returned 428, double precondition returned 400, If-None-Match:* created with 201, and repeating create against an existing path returned 412 without overwrite."
+    },
+    {
+      "id": "AT-018",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_018_path_traversal_and_host_symlink_inputs_are_rejected"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Traversal, double encoding, absolute, backslash, NUL, and empty-segment inputs were rejected. A host symlink named like a valid logical path was not dereferenced; managed database content changed while the host bait stayed untouched."
+    },
+    {
+      "id": "AT-019",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_019_http_and_inproc_use_same_binding_and_truthful_transport"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Equivalent native.echo operations over HTTP and in-process produced the same capability fingerprint and value; exchange records truthfully retained http/inproc transports. The implicit HTTP Run reached succeeded and its wakeup job was retired."
+    },
+    {
+      "id": "AT-020",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_020_execute_bound_does_not_create_a_second_action"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Replaying one admitted run/turn/call slot returned the same Action; execute_bound dispatched once and left one Action and one exchange row."
+    },
+    {
+      "id": "AT-021",
+      "stage": "P02",
+      "status": "passed",
+      "tests": ["tests/integration/test_p02_http_resources.py::test_at_021_capability_schema_is_a_second_validation_layer"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Missing field, wrong type, and depth greater than 32 passed the generic envelope shape but were rejected by capability/depth validation before dispatch or Action admission."
+    },
+    {
+      "id": "AT-022",
+      "stage": "P03",
+      "status": "passed",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_022_complete_model_output_is_committed_before_action_dispatch"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "A pre-response-commit crash left ModelCall started with no response or Action and required a provider retry. A post-response-commit crash recovered from the stored complete output without another provider call, admitted one stable Action, dispatched once, and produced one file effect."
+    },
+    {
+      "id": "AT-023",
+      "stage": "P03",
+      "status": "passed",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_023_invalid_model_output_repair_is_bounded"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Two invalid complete responses consumed exactly two ModelCalls/attempts and two recorded model/output usage units, then terminated failed with model_output_invalid; a third scripted response was not requested."
+    },
+    {
+      "id": "AT-024",
+      "stage": "P03",
+      "status": "passed",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_024_completion_claim_cannot_replace_missing_artifact"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "A model FinalCandidate naming a nonexistent artifact produced a missing_evidence Completion record and left the Run running with no final answer."
+    },
+    {
+      "id": "AT-025",
+      "stage": "P03",
+      "status": "passed",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_025_acceptance_and_regression_results_remain_distinct"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "The Completion record retained separate acceptance and regression arrays. Passing current-request acceptance allowed verified completion while an unrelated legacy regression failure remained visible rather than being rewritten as an acceptance failure."
+    },
+    {
+      "id": "AT-026",
+      "stage": "P03",
+      "status": "passed",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_026_compacted_context_keeps_authorized_source_and_redacts_secret"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Oversized Action output was summarized with the secret redacted; the persisted context retained Action URL, version, and request hash, while an authorized direct Action read still returned the original committed result."
+    },
+    {
+      "id": "AT-027",
+      "stage": "P03",
+      "status": "passed",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_027_sse_resume_starts_after_cursor_and_disconnect_does_not_cancel"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "After 20 committed events, Last-Event-ID: 10 returned SSE IDs 11 through 20 in order. Closing the stream left the Run queued and did not issue cancellation."
+    },
+    {
+      "id": "AT-028",
+      "stage": "P03",
+      "status": "passed",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_028_expired_and_future_event_cursors_fail_before_streaming"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "After pruning through sequence 10, cursor 5 returned 410 application/problem+json with history/snapshot recovery links; cursor 21 against committed sequence 20 returned 409 with the current sequence and recovery links before streaming began."
+    },
+    {
+      "id": "AT-029",
+      "stage": "P03",
+      "status": "passed",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_029_concurrent_budget_reservations_cannot_overdraw"],
+      "command": "scripts/test_with_postgres.sh --cov --cov-report=term-missing",
+      "evidence": "Two concurrent reservations against one remaining tool call produced one reservation and one budget_exhausted result. Releasing it restored capacity; settlement recorded tool actual=1 and output actual=3 independently with no active reservation."
+    },
+    {
+      "id": "AT-030",
+      "stage": "P03",
+      "status": "blocked_environment",
+      "tests": ["tests/integration/test_p03_model_loop.py::test_at_030_live_model_read_transform_artifact_and_usage"],
+      "command": "HNH_RUN_LIVE_TESTS=1 HNH_OPENAI_API_KEY=<redacted> HNH_OPENAI_MODEL=<model> scripts/test_with_postgres.sh tests/integration/test_p03_model_loop.py::test_at_030_live_model_read_transform_artifact_and_usage -vv",
+      "reason": "HNH_RUN_LIVE_TESTS, HNH_OPENAI_API_KEY, and HNH_OPENAI_MODEL were not configured. No external request was attempted and the ScriptedProvider/mock-provider tests were not counted as live evidence."
+    },
+    {
+      "id": "AT-031",
+      "stage": "P04",
+      "status": "passed",
+      "tests": ["tests/integration/test_p04_execution.py::test_at_031_missing_broker_fails_closed_without_host_process"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p04_execution.py -m 'not docker' -q",
+      "evidence": "With no configured broker, POST execution-session returned 503 execution_unavailable, the host subprocess spy recorded no process start, and no ExecutionSession row was created."
+    },
+    {
+      "id": "AT-032",
+      "stage": "P04",
+      "status": "passed",
+      "tests": ["tests/integration/test_p04_execution.py::test_at_032_real_sandbox_enforces_identity_and_resource_limits"],
+      "command": "HNH_TEST_SANDBOX_IMAGE='python@sha256:<verified-local-digest>' scripts/test_with_postgres.sh tests/integration/test_p04_execution.py -q",
+      "evidence": "Docker inspect confirmed uid/gid 65534, no network, read-only root, dropped capabilities, no-new-privileges, no host bind, and configured CPU/memory/PID/tmpfs limits. Infinite loop, memory pressure, process fan-out, and oversized output were bounded, with a fresh sandbox still returning 42."
+    },
+    {
+      "id": "AT-033",
+      "stage": "P04",
+      "status": "passed",
+      "tests": ["tests/integration/test_p04_execution.py::test_at_033_sandbox_network_cannot_reach_external_metadata_or_host"],
+      "command": "HNH_TEST_SANDBOX_IMAGE='python@sha256:<verified-local-digest>' scripts/test_with_postgres.sh tests/integration/test_p04_execution.py -q",
+      "evidence": "A real network-none sandbox failed connections to a public address, link-local metadata address, and host.docker.internal; its receipt returned [false, false, false]."
+    },
+    {
+      "id": "AT-034",
+      "stage": "P04",
+      "status": "passed",
+      "tests": ["tests/integration/test_p04_execution.py::test_at_034_persistent_python_cells_are_serial_and_import_artifacts"],
+      "command": "HNH_TEST_SANDBOX_IMAGE='python@sha256:<verified-local-digest>' scripts/test_with_postgres.sh tests/integration/test_p04_execution.py -q",
+      "evidence": "Two concurrent submissions serialized into cell indices 1 and 2 in one generation; cell 1 set x=42, cell 2 printed 43, and result.txt was imported into an immutable external blob-backed Artifact."
+    },
+    {
+      "id": "AT-035",
+      "stage": "P04",
+      "status": "passed",
+      "tests": ["tests/integration/test_p04_execution.py::test_at_035_recreated_session_has_new_generation_and_no_old_variables"],
+      "command": "HNH_TEST_SANDBOX_IMAGE='python@sha256:<verified-local-digest>' scripts/test_with_postgres.sh tests/integration/test_p04_execution.py -q",
+      "evidence": "After killing the real container, reconciliation committed session_lost. Replacement changed generation and print(x) failed with NameError instead of claiming that process memory was restored."
+    },
+    {
+      "id": "AT-036",
+      "stage": "P04",
+      "status": "passed",
+      "tests": ["tests/integration/test_p04_execution.py::test_at_036_transport_success_does_not_mask_python_exception"],
+      "command": "HNH_TEST_SANDBOX_IMAGE='python@sha256:<verified-local-digest>' scripts/test_with_postgres.sh tests/integration/test_p04_execution.py -q",
+      "evidence": "A ValueError arrived over a healthy broker transport with transport_ok=true but committed both Execution and Action as failed, retaining the typed error receipt."
+    },
+    {
+      "id": "AT-037",
+      "stage": "P04",
+      "status": "passed",
+      "tests": ["tests/integration/test_p04_execution.py::test_at_037_blob_before_metadata_failure_leaves_only_collectable_orphan"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p04_execution.py -m 'not docker' -q",
+      "evidence": "An injected failure after atomic blob publication but before metadata commit left no Artifact row and one unaddressable orphan; garbage collection removed it. A committed blob remained readable and was not collected."
+    },
+    {
+      "id": "AT-038",
+      "stage": "P04",
+      "status": "passed",
+      "tests": ["tests/integration/test_p04_execution.py::test_at_038_pickle_payload_is_rejected_before_deserialization"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p04_execution.py -m 'not docker' -q",
+      "evidence": "application/x-python-pickle returned 415 unsupported_media_type before admission; spies proved pickle.load/loads were not called and no Action row was created."
+    },
+    {
+      "id": "AT-039",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_039_approval_is_bound_to_exact_action_and_resource_version"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "Approval A validated only its frozen request hash and document v1. A distinct Action B targeting v2 could not reuse A's approval and created a second InputRequest with a different hash and resource-version binding."
+    },
+    {
+      "id": "AT-040",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_040_approval_is_consumed_once_and_expiry_blocks_execution"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "Two concurrent responses against version 0 produced one accepted decision, one version conflict, and one response row. The approved effect executed once; an expired request was durably marked expired and its Action remained waiting_input."
+    },
+    {
+      "id": "AT-041",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_041_approval_wait_survives_controller_restart"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "A new RunController loaded the same pending InputRequest and request hash after restart, accepted the approval, queued the Run, and dispatched exactly one external effect."
+    },
+    {
+      "id": "AT-042",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_042_dispatch_rechecks_current_scope_after_approval"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "After approval, removing integrations:invoke caused dispatch-time reauthorization to return PermissionDenied. Dispatch count and HttpExchange count stayed zero while the Action remained ready."
+    },
+    {
+      "id": "AT-043",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_043_lost_response_reconciles_without_repeating_unsafe_effect"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "The fault driver applied one unsafe effect and lost its response. The Action became outcome_unknown and the Run blocked; handle-based query reconciliation then committed success without a second dispatch or effect."
+    },
+    {
+      "id": "AT-044",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_044_remote_idempotent_retry_reuses_key_and_one_effect"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "A remote-idempotent lost response produced outcome_unknown then retry_wait. Two attempts used the same hnh:{action_id} downstream key; the driver observed two dispatches but its dedupe ledger recorded one business effect."
+    },
+    {
+      "id": "AT-045",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_045_unknown_without_query_stays_blocked_and_operator_is_restricted"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "With no query support, reconciliation raised outcome_unknown and preserved one attempt, one effect, Action outcome_unknown, and Run blocked. A principal lacking actions:reconcile received 403 and could not create a reconciliation record."
+    },
+    {
+      "id": "AT-046",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_046_stale_worker_epoch_cannot_dispatch_or_commit"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "After W1's database-time lease expired, W2 claimed a higher epoch. W1 was fenced before dispatch and again before commit; only W2 dispatched one effect and committed the successful result."
+    },
+    {
+      "id": "AT-047",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_047_cancel_and_completion_race_has_one_version_winner",
+        "tests/integration/test_p05_reliability.py::test_reconciliation_cannot_cancel_run_with_another_unresolved_action"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "Twelve concurrent cancel/completion races ended in one legal committed state per Run; succeeded Runs rejected late cancellation. A separate cancellation cancelled its pre-dispatch Action and begin_action_dispatch returned false. A two-Action PostgreSQL test showed manual reconciliation of only the first uncertain effect cannot terminalize the Run; after the second is confirmed applied or not applied, the Run cancels with a committed run.cancelled event."
+    },
+    {
+      "id": "AT-048",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_048_cancel_ack_is_not_confirmation_of_stop"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "The remote driver acknowledged cancellation but reported stopped=false and remained running. The Action stayed waiting_external and the Run stayed cancelling instead of being declared cancelled."
+    },
+    {
+      "id": "AT-049",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_049_unsafe_500_with_effect_is_not_retried"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "An unsafe driver returned a 500-shaped result after applying an effect. Recovery marked outcome_unknown/reconcile_only; a second dispatch was refused and both dispatch and effect counters remained one."
+    },
+    {
+      "id": "AT-050",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_050_dns_redirect_and_cross_origin_secret_policy"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "A controlled resolver showed per-hop DNS revalidation rejecting loopback rebinding; unregistered metadata targets and redirects were rejected. Cross-origin redirects removed Authorization and Cookie while retaining a safe request ID. This is deterministic policy evidence, not packet capture."
+    },
+    {
+      "id": "AT-051",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_051_events_context_and_exports_redact_secret_canaries"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "A canary API key and bearer/cookie values were absent from serialized committed events, model contexts, exchange export, and sanitized result export; [REDACTED] markers remained. The authorized Action result retained the raw value separately."
+    },
+    {
+      "id": "AT-052",
+      "stage": "P05",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p05_reliability.py::test_at_052_incompatible_checkpoint_blocks_recovery"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p05_reliability.py -q",
+      "evidence": "A checkpoint referencing removed.publish revision old-7 was retained but refused under the replacement capability set. The Run blocked with failure code migration_required and a committed run.migration_required event."
+    },
+    {
+      "id": "AT-053",
+      "stage": "P06",
+      "status": "passed",
+      "tests": ["tests/integration/test_p06_mcp.py::test_at_053_official_modern_discovery_call_and_http_header_body_consistency", "tests/integration/test_p06_mcp_process.py::test_official_mcp_server_in_another_process_is_discovered_over_real_http"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p06_mcp.py -q --tb=short && .venv/bin/pytest tests/integration/test_p06_mcp_process.py -q --tb=short",
+      "evidence": "Official mcp 2.2.0 SDK and an official MCPServer negotiated 2026-07-28, listed and called tools over in-process, Streamable HTTP ASGI, and a separate Uvicorn OS process on real loopback HTTP. Child server_pid matched the subprocess. A deliberately mismatched Mcp-Method/body request returned HEADER_MISMATCH. No unrelated remote HTTPS/OAuth deployment was tested."
+    },
+    {
+      "id": "AT-054",
+      "stage": "P06",
+      "status": "passed",
+      "tests": ["tests/integration/test_p06_mcp.py::test_at_054_profiles_are_explicit_and_discovery_has_no_tool_side_effect"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p06_mcp.py -q --tb=short",
+      "evidence": "Separate official MCPServer instances negotiated modern 2026-07-28 and forced legacy 2025-11-25 profiles; discovery created zero tasks or tool effects. This is two modes of the same SDK/server implementation, not an independent legacy vendor interoperability claim."
+    },
+    {
+      "id": "AT-055",
+      "stage": "P06",
+      "status": "passed",
+      "tests": ["tests/integration/test_p06_mcp.py::test_at_055_complete_tool_error_protocol_error_and_arbitrary_json", "tests/integration/test_p06_mcp.py::test_at_056_mrtr_restart_resumes_same_action_with_opaque_state_and_new_request_id", "tests/integration/test_p06_mcp.py::test_at_057_task_handle_survives_restart_and_update_cancel_are_separate"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p06_mcp.py -q --tb=short",
+      "evidence": "Protocol error, tool isError, input_required, and task outcomes reached distinct durable paths; structuredContent array survived unchanged. The protocol error retained its code, while HTTP 200 tool errors did not become success."
+    },
+    {
+      "id": "AT-056",
+      "stage": "P06",
+      "status": "passed",
+      "tests": ["tests/integration/test_p06_mcp.py::test_at_056_mrtr_restart_resumes_same_action_with_opaque_state_and_new_request_id"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p06_mcp.py -q --tb=short",
+      "evidence": "After rebuilding the controller, the submitted InputRequest resumed the original Action using persisted opaque requestState, and the RPC ledger had two distinct correlation IDs. The official in-process SDK starts a fresh protocol session for each call, so its numeric wire IDs may repeat across those sessions."
+    },
+    {
+      "id": "AT-057",
+      "stage": "P06",
+      "status": "passed",
+      "tests": ["tests/integration/test_p06_mcp.py::test_at_057_task_handle_survives_restart_and_update_cancel_are_separate", "tests/integration/test_p06_mcp.py::test_p06_initially_completed_task_commits_action_once", "tests/integration/test_p06_mcp.py::test_p06_stale_poll_worker_is_fenced_before_remote_request"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p06_mcp.py -q --tb=short",
+      "evidence": "A persisted task handle survived controller restart; tasks/get did not recreate the task; tasks/update and tasks/cancel were distinct, and cancel ACK was not treated as stop. An initially completed task committed once and stale lease ownership prevented a remote poll."
+    },
+    {
+      "id": "AT-058",
+      "stage": "P06",
+      "status": "passed",
+      "tests": ["tests/integration/test_p06_mcp.py::test_at_058_extensions_are_advertised_only_when_enabled"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p06_mcp.py -q --tb=short",
+      "evidence": "With Tasks disabled, the imported capability did not advertise task mode; invoking a task-only tool produced an explicit MCP protocol error and a failed Action, not a false success."
+    },
+    {
+      "id": "AT-059",
+      "stage": "P06",
+      "status": "passed",
+      "tests": [
+        "tests/integration/test_p06_mcp.py::test_at_059_credential_binding_isolated_by_issuer_resource_and_subject",
+        "tests/integration/test_p06_mcp.py::test_p06_http_transport_forwards_only_the_bound_upstream_token",
+        "tests/integration/test_p06_mcp.py::test_p06_expired_or_revoked_credentials_fail_before_transport_creation",
+        "tests/integration/test_p06_mcp.py::test_p06_mcp_http_transport_does_not_forward_token_across_redirect",
+        "tests/integration/test_p06_mcp.py::test_p06_issuer_pinned_oauth_sdk_can_discover_official_mcp_server",
+        "tests/unit/test_p06_oauth.py::test_p06_official_oauth_client_credentials_binds_issuer_and_resource",
+        "tests/unit/test_p06_oauth.py::test_p06_malicious_issuer_never_receives_client_secret_or_token_request",
+        "tests/unit/test_p06_oauth.py::test_p06_oauth_vault_rejects_wrong_actor_expiry_revocation_and_endpoint",
+        "tests/unit/test_p06_oauth.py::test_p06_revocation_after_token_issuance_prevents_cached_token_reuse",
+        "tests/unit/test_p06_oauth.py::test_p06_resource_401_reauthorizes_with_pinned_issuer"
+      ],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p06_mcp.py -q --tb=short && .venv/bin/pytest tests/unit/test_p06_oauth.py -q --tb=short",
+      "evidence": "Within local official-SDK/server and mock-issuer scope, exact binding and redirect tests passed; official SDK client-credentials OAuth discovered MCPServer, allowed Basic only at pinned issuer token endpoint and bearer only at resource; malicious advertised/metadata issuers caused no token request. After token issuance, vault revocation prevented any further HTTP request; a resource 401 triggered a second exchange at the same pinned issuer and a new bearer at the resource. Managed secret storage, real issuer refresh and independent remote deployment remain untested."
+    },
+    {
+      "id": "AT-060",
+      "stage": "P07",
+      "status": "passed",
+      "tests": ["tests/integration/test_p07_extensions.py::test_at_060_classifier_off_timeout_or_bad_output_falls_back_without_blocking_task", "tests/integration/test_p07_extensions.py::test_classifier_configuration_rejects_nonfinite_or_boolean_limits"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p07_extensions.py -q --tb=short",
+      "evidence": "Five parameterized real-PostgreSQL cases used disabled, timed-out, invalid-label, malformed-object, and boolean-confidence classifier output; the ordinary file task still executed with persisted simple fallback. Non-finite and boolean timeout/threshold settings are rejected. Controlled classifiers, not live TypeSafe."
+    },
+    {
+      "id": "AT-061",
+      "stage": "P07",
+      "status": "passed",
+      "tests": ["tests/integration/test_p07_extensions.py::test_at_061_high_confidence_hint_cannot_authorize_forbidden_write"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p07_extensions.py -q --tb=short",
+      "evidence": "A 1.0 plan_hint reached the persisted model call, but a read-only principal's write proposal was rejected and zero Actions were admitted."
+    },
+    {
+      "id": "AT-062",
+      "stage": "P07",
+      "status": "passed",
+      "tests": ["tests/integration/test_p07_extensions.py::test_at_062_child_scope_budget_depth_and_count_are_enforced_atomically", "tests/integration/test_p07_extensions.py::test_child_run_execution_uses_delegated_scope_even_with_broad_caller", "tests/integration/test_p07_extensions.py::test_child_must_reserve_parent_cost_and_wall_limits"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p07_extensions.py -q --tb=short",
+      "evidence": "Child/parent Run ledger and parent reservations committed together. Forged scope was removed, parent overspend/depth/count rejected, finite parent cost/wall bounds enforced, and both Runner and direct ActionGateway refused a child write even with a broader caller context."
+    },
+    {
+      "id": "AT-063",
+      "stage": "P07",
+      "status": "passed",
+      "tests": ["tests/integration/test_p07_extensions.py::test_at_063_parent_cancellation_propagates_and_waits_for_child", "tests/integration/test_p08_run_worker.py::test_worker_drains_child_then_parent_cancellation_without_model_call", "tests/integration/test_p08_run_worker.py::test_worker_does_not_confirm_cancellation_with_unknown_action", "tests/integration/test_p08_run_worker.py::test_stale_cancel_lease_cannot_confirm_run_stop", "tests/integration/test_p08_run_worker.py::test_late_model_response_after_confirmed_cancel_cannot_admit_action", "tests/integration/test_p08_dev_worker_entrypoint.py::test_dev_worker_confirms_api_requested_cancellation_without_model_call", "tests/integration/test_p08_dev_worker_entrypoint.py::test_cancel_only_cli_does_not_need_model_or_claim_ordinary_run", "tests/integration/test_p08_local_effect_recovery.py::test_cancel_only_worker_reconciles_committed_local_effect_without_replay", "tests/integration/test_p08_local_effect_recovery.py::test_cancel_only_worker_keeps_local_effect_unresolved_without_matching_receipt"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p07_extensions.py tests/integration/test_p08_run_worker.py tests/integration/test_p08_dev_worker_entrypoint.py tests/integration/test_p08_local_effect_recovery.py -q --tb=short",
+      "evidence": "Parent cancellation atomically moves descendants to cancelling and blocks new child admission. A trusted lease-bound worker drains a no-effect child before its parent without calling the model, including after HTTP API cancellation admission. A separate cancel-only CLI process needs no model credentials and leaves ordinary queued work untouched. For artifact.create and conditional workspace.file.write, a cancel-only worker may confirm a previously committed local effect from the PostgreSQL idempotency receipt without re-dispatch; missing or mismatched receipts leave the Run cancelling. An expired cancel_run lease cannot reconcile an Action, and an expired advance_run lease cannot overwrite the result. An outcome_unknown remote Action keeps cancellation unconfirmed. A model response arriving after confirmed cancellation remains recorded but cannot admit a new Action. Remote effect cancellation/reconciliation remains adapter-specific and unimplemented in this worker."
+    },
+    {
+      "id": "AT-064",
+      "stage": "P07",
+      "status": "passed",
+      "tests": ["tests/integration/test_p07_extensions.py::test_at_064_skill_is_pinned_cited_and_cannot_override_policy"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p07_extensions.py -q --tb=short",
+      "evidence": "Malicious allowlisted skill text was source-cited and SHA-pinned; its forbidden write produced zero Actions under read-only scopes. Changing the file before the next turn raised migration_required."
+    },
+    {
+      "id": "AT-065",
+      "stage": "P08",
+      "status": "blocked_environment",
+      "reason": "live_four_arm_experiment_not_run: no live model credential or independent HTTPS MCP/OAuth endpoint; opt-in live entrypoint passed with mock Responses and local official MCPServer, including a separate loopback process, remote-contract preflight, identical model-visible capability catalogs across the downstream axis, equivalent observations, environment-hash integrity and controlled-vs-live evidence-tier checks",
+      "partial_tests": [
+        "tests/unit/test_p08_evaluation.py::test_at_065_four_arm_runner_uses_identical_controls_and_retains_raw_failures",
+        "tests/unit/test_p08_evaluation.py::test_four_arm_order_is_reproducibly_counterbalanced_and_reported_by_arm",
+        "tests/unit/test_p08_evaluation.py::test_four_arm_runner_stops_if_executor_mutates_shared_controls",
+        "tests/unit/test_p08_evaluation.py::test_four_arm_runner_stops_on_capability_design_drift",
+        "tests/unit/test_p08_evaluation.py::test_complete_arm_set_with_mixed_controls_or_oracles_is_not_valid",
+        "tests/unit/test_p08_evaluation.py::test_summary_cli_rejects_complete_arms_with_mixed_controls",
+        "tests/unit/test_p08_evaluation.py::test_summary_cli_rejects_mixed_model_revision_despite_same_controls_hash",
+        "tests/unit/test_p08_evaluation.py::test_ablation_is_independent_off_on_and_has_own_raw_file",
+        "tests/unit/test_p08_evaluation.py::test_ablation_balances_order_and_rejects_partial_or_mixed_records",
+        "tests/unit/test_p08_evaluation.py::test_ablation_runner_stops_if_executor_mutates_shared_controls",
+        "tests/unit/test_p08_function_tools.py::test_openai_function_provider_sends_real_function_tools_and_preserves_call",
+        "tests/integration/test_p08_function_loop.py::test_native_function_call_is_durable_before_common_gateway_dispatch",
+        "tests/integration/test_p08_controlled_arms.py::test_four_controlled_arms_reach_same_gateway_and_echo_semantics",
+        "tests/integration/test_p08_live_entrypoint.py::test_four_case_four_arm_entrypoint_records_committed_echo_and_usage",
+        "tests/integration/test_p08_live_entrypoint.py::test_echo_preflight_rejects_incomparable_mcp_schema_before_model_or_run",
+        "tests/integration/test_p08_live_entrypoint.py::test_echo_preflight_rejects_remote_schema_narrower_than_canonical_domain",
+        "tests/integration/test_p08_live_entrypoint.py::test_echo_preflight_rejects_unproven_remote_output_before_model_or_run",
+        "tests/integration/test_p08_live_entrypoint.py::test_echo_preflight_rejects_remote_output_narrower_than_canonical_domain",
+        "tests/integration/test_p08_live_entrypoint.py::test_echo_runner_rejects_unpinned_control_revision_before_model_or_run",
+        "tests/integration/test_p08_live_entrypoint.py::test_four_arm_echo_uses_separate_mcp_process_over_real_http",
+        "tests/integration/test_p08_live_entrypoint.py::test_live_echo_provider_timeout_is_not_reported_as_generic_failure",
+        "tests/integration/test_p08_live_entrypoint.py::test_echo_call_returning_after_deadline_is_recorded_as_timeout",
+        "tests/integration/test_p08_live_entrypoint.py::test_echo_completed_after_deadline_is_not_counted_as_timely_success",
+        "tests/unit/test_p08_live_config.py::test_live_config_fails_closed_without_external_credentials",
+        "tests/unit/test_p08_live_config.py::test_live_config_requires_an_explicit_safe_implementation_revision",
+        "tests/unit/test_p08_live_config.py::test_echo_suite_has_four_distinct_predeclared_oracles"
+      ],
+      "command": ".venv/bin/pytest tests/unit/test_p08_evaluation.py tests/unit/test_p08_function_tools.py tests/unit/test_p08_live_config.py -q && scripts/test_with_postgres.sh tests/integration/test_p08_function_loop.py tests/integration/test_p08_controlled_arms.py tests/integration/test_p08_live_entrypoint.py -q --tb=short"
+    },
+    {
+      "id": "AT-066",
+      "stage": "P08",
+      "status": "passed",
+      "tests": ["tests/integration/test_p08_ops.py::test_at_066_backup_restores_active_terminal_and_blob_without_starting_workers"],
+      "command": "scripts/test_with_postgres.sh tests/integration/test_p08_ops.py -q --tb=short",
+      "evidence": "Offline pg_dump/pg_restore into a second real PostgreSQL database restored a blocked Run, terminal Run, content-addressed Blob and unsafe outcome_unknown Action. The restored Action refused ready-to-running redispatch, workers were not started, and nonempty restore target was rejected. Writers must be quiesced externally."
+    },
+    {
+      "id": "AT-067",
+      "stage": "P08",
+      "status": "passed",
+      "tests": ["tests/unit/test_p08_observability.py::test_at_067_missing_dependencies_are_explicit_and_no_mock_readiness", "tests/unit/test_p08_observability.py::test_at_067_http_span_exports_safe_route_and_matches_response_context", "tests/integration/test_p08_ops.py::test_at_067_readiness_distinguishes_healthy_database_from_missing_optional_services", "tests/integration/test_p08_otlp.py::test_at_067_configured_otlp_exporter_sends_redacted_route_span", "tests/integration/test_p08_otlp.py::test_at_067_otlp_exporter_does_not_follow_redirect_to_other_host", "tests/unit/test_p08_compose.py::test_dev_compose_pins_images_and_only_publishes_loopback_api", "tests/unit/test_p08_compose.py::test_dev_compose_does_not_mount_host_or_docker_socket_into_agent_processes"],
+      "command": ".venv/bin/pytest tests/unit/test_p08_observability.py tests/unit/test_p08_compose.py tests/integration/test_p08_otlp.py -q && scripts/test_with_postgres.sh tests/integration/test_p08_ops.py -q --tb=short && bash scripts/check_dev_compose.sh",
+      "evidence": "Without DB readiness returned 503 and all missing components were named. With real PostgreSQL readiness returned core_ready while model and broker remained explicitly missing. A local loopback OTLP/HTTP receiver accepted protobuf spans with route-template attributes and no raw query; a 307 redirect test confirmed no POST reached the redirected destination. This is not an external collector or distributed trace. A development-only Compose smoke built the locked image and verified one-shot migration, DB/API health, authenticated catalog, and cleanup using placeholder model credentials. It made no live provider call and is not production security proof."
+    },
+    {
+      "id": "AT-068",
+      "stage": "P08",
+      "status": "blocked_environment",
+      "reason": "real_end_to_end_evaluation_not_run: the three-case read/transform/artifact task suite, independent byte oracle, design-control/environment-hash preflight, controlled-vs-live evidence-tier validation and skills off/on wiring passed only with mock Responses on PostgreSQL/Blob; no real-model raw JSONL, provider usage, latency/cost report, or production service exercise exists; fault and worker fixtures do not replace live evidence",
+      "partial_tests": [
+        "tests/unit/test_p08_evaluation.py::test_at_068_summary_counts_timeout_blocked_failure_and_no_fake_token_usage",
+        "tests/unit/test_p08_evaluation.py::test_partial_or_duplicate_four_arm_raw_file_is_explicitly_incomplete",
+        "tests/unit/test_p08_evaluation.py::test_summary_cli_exits_nonzero_for_truncated_four_arm_run",
+        "tests/unit/test_p08_evaluation.py::test_task_suite_retains_timeouts_and_requires_all_predeclared_cases",
+        "tests/unit/test_p08_evaluation.py::test_task_suite_runner_rejects_control_mutation",
+        "tests/unit/test_p08_task_config.py::test_task_suite_has_distinct_input_and_output_oracles",
+        "tests/unit/test_p08_task_config.py::test_live_task_config_requires_explicit_credentials_and_fresh_raw_path",
+        "tests/unit/test_p08_skills_config.py::test_live_skills_config_requires_credentials_and_fresh_raw_path",
+        "tests/unit/test_p08_evaluation.py::test_complete_arm_set_with_mixed_controls_or_oracles_is_not_valid",
+        "tests/unit/test_p08_evaluation.py::test_ablation_balances_order_and_rejects_partial_or_mixed_records",
+        "tests/unit/test_p08_evaluation.py::test_summary_cli_rejects_unlabeled_raw_rows",
+        "tests/unit/test_p08_evaluation.py::test_summary_refuses_inflated_completion_claim_in_raw_record",
+        "tests/unit/test_p08_evaluation.py::test_usage_does_not_accept_estimated_tokens",
+        "tests/unit/test_p08_evaluation.py::test_evaluation_controls_require_finite_positive_timeout",
+        "tests/unit/test_p08_evaluation.py::test_evaluation_controls_require_a_sha256_environment_hash",
+        "tests/unit/test_p08_evaluation.py::test_summary_rejects_invalid_provider_usage_in_complete_dataset",
+        "tests/unit/test_p08_ci_report.py::test_ci_report_accepts_only_declared_live_skip_and_executed_partial_evidence",
+        "tests/unit/test_p08_ci_report.py::test_ci_report_rejects_missing_passed_test",
+        "tests/unit/test_p08_ci_report.py::test_ci_report_rejects_unexpected_skip_and_stale_summary",
+        "tests/unit/test_p08_ci_report.py::test_release_gate_rejects_declared_blockers_even_when_ci_mapping_is_consistent",
+        "tests/unit/test_p08_ci_report.py::test_release_gate_passes_only_all_executed_acceptance",
+        "tests/unit/test_p08_ci_report.py::test_release_gate_rejects_missing_or_duplicate_spec_ids",
+        "tests/unit/test_p08_ci_report.py::test_ci_gate_reports_malformed_spec_as_failed_evidence",
+        "tests/integration/test_p08_task_suite.py::test_multi_capability_task_suite_records_three_exact_artifact_oracles",
+        "tests/integration/test_p08_task_suite.py::test_task_suite_rejects_mislabeled_controls_before_seed_or_run",
+        "tests/integration/test_p08_task_suite.py::test_task_suite_rejects_model_completion_with_wrong_artifact_and_no_read",
+        "tests/integration/test_p08_task_suite.py::test_task_suite_rejects_correct_artifact_created_before_read_observation",
+        "tests/integration/test_p08_task_suite.py::test_task_suite_provider_failure_or_timeout_blocks_run_and_preserves_raw_result",
+        "tests/integration/test_p08_task_suite.py::test_task_call_returning_after_deadline_is_recorded_as_timeout",
+        "tests/integration/test_p08_task_suite.py::test_task_completed_after_deadline_keeps_evidence_but_not_success_score",
+        "tests/integration/test_p08_skills_ablation.py::test_skills_ablation_toggles_only_allowlisted_context_and_keeps_gateway",
+        "tests/integration/test_p08_skills_ablation.py::test_skills_ablation_rejects_changed_skill_before_model_or_run",
+        "tests/integration/test_p08_network_fault.py::test_response_lost_after_real_http_effect_requires_query_and_never_redispatches",
+        "tests/integration/test_p08_local_effect_recovery.py::test_worker_commits_conditional_file_write_then_evidenced_completion",
+        "tests/integration/test_p08_local_effect_recovery.py::test_reclaimed_worker_reuses_artifact_effect_after_receipt_commit_loss",
+        "tests/integration/test_p08_local_effect_recovery.py::test_reclaimed_worker_replays_conditional_file_write_without_new_revision",
+        "tests/integration/test_p08_dev_worker_entrypoint.py::test_dev_worker_artifact_is_readable_from_api_shared_blob_root",
+        "tests/integration/test_p08_live_entrypoint.py::test_four_case_four_arm_entrypoint_records_committed_echo_and_usage",
+        "tests/integration/test_p08_process_topology.py::test_api_and_worker_processes_finish_a_run_over_real_http",
+        "tests/integration/test_p08_process_topology.py::test_killed_worker_model_call_is_reclaimed_without_action_replay"
+      ],
+      "command": ".venv/bin/pytest tests/unit/test_p08_evaluation.py tests/unit/test_p08_task_config.py tests/unit/test_p08_ci_report.py -q && scripts/test_with_postgres.sh tests/integration/test_p08_task_suite.py tests/integration/test_p08_live_entrypoint.py tests/integration/test_p08_network_fault.py tests/integration/test_p08_process_topology.py tests/integration/test_p08_local_effect_recovery.py tests/integration/test_p08_dev_worker_entrypoint.py -q --tb=short"
+    }
+  ]
+}

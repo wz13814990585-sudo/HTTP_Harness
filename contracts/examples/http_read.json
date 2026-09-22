@@ -1,0 +1,7 @@
+{
+  "method": "GET",
+  "target": "/v1/workspaces/ws-demo/files/input.csv",
+  "headers": {
+    "accept": "text/csv"
+  }
+}

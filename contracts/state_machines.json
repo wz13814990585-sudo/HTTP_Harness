@@ -1,0 +1,116 @@
+{
+  "spec_version": "0.1.0",
+  "run": {
+    "initial": "queued",
+    "terminal": [
+      "succeeded",
+      "failed",
+      "cancelled",
+      "expired"
+    ],
+    "transitions": {
+      "queued": [
+        "running",
+        "cancelling",
+        "failed",
+        "expired"
+      ],
+      "running": [
+        "waiting_input",
+        "blocked",
+        "cancelling",
+        "succeeded",
+        "failed",
+        "expired"
+      ],
+      "waiting_input": [
+        "queued",
+        "blocked",
+        "cancelling",
+        "failed",
+        "expired"
+      ],
+      "blocked": [
+        "queued",
+        "cancelling",
+        "failed",
+        "expired"
+      ],
+      "cancelling": [
+        "cancelled",
+        "blocked",
+        "failed"
+      ],
+      "succeeded": [],
+      "failed": [],
+      "cancelled": [],
+      "expired": []
+    }
+  },
+  "action": {
+    "initial": "proposed",
+    "terminal": [
+      "succeeded",
+      "failed",
+      "cancelled"
+    ],
+    "transitions": {
+      "proposed": [
+        "ready",
+        "waiting_input",
+        "failed",
+        "cancelled"
+      ],
+      "waiting_input": [
+        "ready",
+        "failed",
+        "cancelled"
+      ],
+      "ready": [
+        "running",
+        "failed",
+        "cancelled"
+      ],
+      "running": [
+        "succeeded",
+        "failed",
+        "waiting_input",
+        "waiting_external",
+        "retry_wait",
+        "outcome_unknown",
+        "cancelled"
+      ],
+      "waiting_external": [
+        "succeeded",
+        "failed",
+        "waiting_input",
+        "outcome_unknown",
+        "cancelled"
+      ],
+      "retry_wait": [
+        "ready",
+        "failed",
+        "cancelled"
+      ],
+      "outcome_unknown": [
+        "succeeded",
+        "failed",
+        "ready",
+        "cancelled"
+      ],
+      "succeeded": [],
+      "failed": [],
+      "cancelled": []
+    }
+  },
+  "guards": {
+    "all_mutations": "Require authorized context, expected aggregate version, and current lease epoch where a worker owns the transition.",
+    "run_to_succeeded": "No pending inputs or unresolved effects; all required acceptance evidence has been committed and validated.",
+    "run_to_terminal": "No unresolved external effects. Expiry/cancellation intent may remain while blocked until reconciled.",
+    "cancel_race": "The first committed aggregate transition wins. A committed cancellation prevents new business dispatch.",
+    "action_to_cancelled": "Pre-dispatch cancellation or confirmed external execution stop. A mere cancellation acknowledgement is insufficient.",
+    "unknown_to_ready": "Trusted reconciliation proves not-applied OR verified downstream idempotency still applies; never an LLM guess.",
+    "waiting_input_to_ready": "Bound input/approval received, not expired, same request hash and scope; dispatch revalidates authorization.",
+    "running_to_retry_wait": "Effect classification and dispatch evidence establish a safe retry, budget/deadline permit it."
+  }
+}

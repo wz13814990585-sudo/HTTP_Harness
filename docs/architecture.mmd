@@ -1,0 +1,22 @@
+flowchart TD
+  Client[CLI / SDK / UI] --> API[HTTP API + SSE]
+  API --> Auth[Authenticated ResourceDispatcher]
+  Auth --> Kernel[RunController + ActionGateway]
+  Kernel --> DB[(Postgres: Runs Actions ModelCalls Events Jobs)]
+  Kernel --> Runner[Small Runner + Strategy]
+  Runner --> Context[ContextBuilder + Capability Catalog]
+  Runner --> Model[ModelProvider]
+  Model --> Op[Untrusted HttpOperation / FinalCandidate]
+  Op --> Kernel
+  Kernel --> Policy[Policy + Approval + Budget]
+  Policy --> Dispatch[execute_bound]
+  Dispatch --> Native[Native Adapter]
+  Dispatch --> HTTP[Allowlisted HTTP Adapter]
+  Dispatch --> MCP[Optional MCP Adapter]
+  Dispatch --> Broker[Isolated Execution Broker]
+  Broker --> Python[Persistent Python Session]
+  Dispatch --> Evidence[Results + Artifact References]
+  Evidence --> Kernel
+  Kernel --> Blob[(Immutable Blob Store)]
+  DB --> SSE[Committed Event Stream]
+  SSE --> Client

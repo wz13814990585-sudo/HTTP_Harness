@@ -1,0 +1,14 @@
+**
+!pyproject.toml
+!uv.lock
+!README.md
+!alembic.ini
+!src/
+!src/**
+!contracts/
+!contracts/**
+!migrations/
+!migrations/**
+!deploy/
+!deploy/dev/
+!deploy/dev/Dockerfile

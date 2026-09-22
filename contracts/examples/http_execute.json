@@ -1,0 +1,11 @@
+{
+  "method": "POST",
+  "target": "/v1/execution-sessions/session-demo/executions",
+  "headers": {
+    "content-type": "text/plain"
+  },
+  "payload": {
+    "kind": "text",
+    "text": "values = [10, 20, 30]\nprint(sum(values))"
+  }
+}

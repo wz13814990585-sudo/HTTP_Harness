@@ -1,0 +1,62 @@
+[
+  {
+    "path": "contracts/examples/http_read.json",
+    "schema": "HttpOperation",
+    "valid": true
+  },
+  {
+    "path": "contracts/examples/http_execute.json",
+    "schema": "HttpOperation",
+    "valid": true
+  },
+  {
+    "path": "contracts/examples/run_create.json",
+    "schema": "RunCreate",
+    "valid": true
+  },
+  {
+    "path": "contracts/examples/run_waiting.json",
+    "schema": "Run",
+    "valid": true
+  },
+  {
+    "path": "contracts/examples/event.json",
+    "schema": "Event",
+    "valid": true
+  },
+  {
+    "path": "contracts/examples/approval.json",
+    "schema": "InputResponse",
+    "valid": true
+  },
+  {
+    "path": "contracts/examples/final.json",
+    "schema": "FinalCandidate",
+    "valid": true
+  },
+  {
+    "path": "contracts/examples/capability.json",
+    "schema": "Capability",
+    "valid": true
+  },
+  {
+    "path": "contracts/examples/reject_absolute_target.json",
+    "schema": "HttpOperation",
+    "valid": false
+  },
+  {
+    "path": "contracts/examples/reject_model_auth.json",
+    "schema": "HttpOperation",
+    "valid": false
+  },
+  {
+    "path": "contracts/examples/reject_actor_forgery.json",
+    "schema": "HttpOperation",
+    "valid": false
+  },
+  {
+    "path": "contracts/examples/reject_zero_budget.json",
+    "schema": "RunCreate",
+    "valid": false
+  }
+]
