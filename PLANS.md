@@ -48,7 +48,8 @@ independent remote interoperability remain future production-hardening work.
 P08 still needs a production-configured model worker,
 four live comparable model/downstream arms, raw live task runs, deployment and CI
 exercise, and complete observability/operational gates. The environment has no
-`HNH_OPENAI_API_KEY`, `HNH_OPENAI_MODEL`, or independent MCP/OAuth endpoint.
+`HNH_DEEPSEEK_API_KEY` or independent MCP/OAuth endpoint. DeepSeek is now the
+configured live provider; TypeSafe remains an optional disabled P07 adapter.
 The opt-in live echo entrypoint has four fixed input variants of one read-only
 capability. A separate three-task read/transform/artifact suite is now
 implemented for AT-068 and passed only with a mocked model. Neither entrypoint
@@ -747,7 +748,7 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   No Git remote exists, and the configured GitHub CLI credential is invalid, so
   remote CI has not run. Project metadata remains deliberately `Proprietary`;
   choosing an open-source license and repository visibility requires an owner
-  decision. OpenAI and MCP/OAuth environment variables remain unset, so no live
+  decision. Model and MCP/OAuth environment variables remain unset, so no live
   evidence was generated.
 
 - 2026-09-23: Connected and pushed `main` to
@@ -768,11 +769,27 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   blocked until the owner configures the live API key and model without
   committing them.
 
+- 2026-09-23: Switched the configured development worker and opt-in live
+  evaluation entrypoints from OpenAI-specific environment variables to a
+  dedicated DeepSeek Responses provider. The adapter uses the verified
+  `https://api.deepseek.com/responses` contract, accepts only
+  `deepseek-flash`/`deepseek-v4-pro`, records `reasoning.effort`, and excludes
+  provider reasoning items from public/audit model responses. OpenAI adapters
+  remain available as separate providers; TypeSafe remains disabled. Local
+  provider/config unit tests passed 19/19. The final digest-pinned
+  PostgreSQL/Docker regression collected 275 tests: 274 passed and only AT-030
+  skipped for the absent real DeepSeek key; migration round-trip/drift passed.
+  The 68-ID evidence gate was consistent, strict release mode still rejected
+  AT-030/065/068, and the self-cleaning Compose smoke passed with placeholder
+  credentials and no model call. Ruff, formatting, mypy (64 source files) and
+  105/105 static design checks passed. This is compatibility and regression
+  evidence, not a real DeepSeek call or live evaluation result.
+
 ## Environment constraints
 
 - No model or MCP endpoint credential variables were present; values were never
-  printed. `HNH_OPENAI_API_KEY`, `HNH_OPENAI_MODEL`, MCP endpoint/client variables
-  remain unset. Temporary local PostgreSQL 14 is available for tests.
+  printed. `HNH_DEEPSEEK_API_KEY` and MCP endpoint/client variables remain
+  unset. Temporary local PostgreSQL 14 is available for tests.
 - Docker Engine was started for P04 and its real sandbox tests passed. Continued
   sandbox operation requires a running daemon and an explicitly configured image
   pinned by `@sha256:`; absence fails closed with `execution_unavailable`.

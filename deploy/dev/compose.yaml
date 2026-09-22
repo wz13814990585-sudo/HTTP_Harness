@@ -84,9 +84,10 @@ services:
       HNH_DEV_TOKEN: ${HNH_DEV_TOKEN:?set HNH_DEV_TOKEN}
       HNH_DEV_TENANT: ${HNH_DEV_TENANT:-local}
       HNH_DEV_SUBJECT: ${HNH_DEV_SUBJECT:-developer}
-      HNH_OPENAI_API_KEY: ${HNH_OPENAI_API_KEY:?set HNH_OPENAI_API_KEY}
-      HNH_OPENAI_MODEL: ${HNH_OPENAI_MODEL:?set HNH_OPENAI_MODEL}
-      HNH_OPENAI_BASE_URL: ${HNH_OPENAI_BASE_URL:-https://api.openai.com/v1}
+      HNH_DEEPSEEK_API_KEY: ${HNH_DEEPSEEK_API_KEY:?set HNH_DEEPSEEK_API_KEY}
+      HNH_DEEPSEEK_MODEL: ${HNH_DEEPSEEK_MODEL:-deepseek-flash}
+      HNH_DEEPSEEK_BASE_URL: ${HNH_DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      HNH_DEEPSEEK_REASONING_EFFORT: ${HNH_DEEPSEEK_REASONING_EFFORT:-high}
       HNH_BLOB_ROOT: /data/blobs
     volumes:
       - artifact_blobs:/data/blobs

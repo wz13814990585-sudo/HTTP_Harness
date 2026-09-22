@@ -88,7 +88,7 @@ def test_dev_worker_advances_api_admitted_run_with_same_configured_principal(
 
 
 def test_dev_worker_refuses_missing_configuration() -> None:
-    with pytest.raises(ValueError, match=r"HNH_DATABASE_URL.*HNH_DEV_TOKEN.*HNH_OPENAI_API_KEY"):
+    with pytest.raises(ValueError, match=r"HNH_DATABASE_URL.*HNH_DEV_TOKEN.*HNH_DEEPSEEK_API_KEY"):
         build_development_worker(Settings(database_url=None, development_token=None))
 
 
@@ -342,9 +342,10 @@ def test_dev_worker_cli_process_completes_api_run_against_local_model_fixture(
                 "HNH_DEV_TOKEN": settings.development_token or "",
                 "HNH_DEV_TENANT": settings.development_tenant,
                 "HNH_DEV_SUBJECT": settings.development_subject,
-                "HNH_OPENAI_API_KEY": "fixture-not-a-secret",
-                "HNH_OPENAI_MODEL": "fixture-model",
-                "HNH_OPENAI_BASE_URL": f"http://127.0.0.1:{server.server_port}/v1",
+                "HNH_DEEPSEEK_API_KEY": "fixture-not-a-secret",
+                "HNH_DEEPSEEK_MODEL": "deepseek-flash",
+                "HNH_DEEPSEEK_BASE_URL": f"http://127.0.0.1:{server.server_port}/v1",
+                "HNH_DEEPSEEK_REASONING_EFFORT": "high",
             }
         )
         result = subprocess.run(

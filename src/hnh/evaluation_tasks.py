@@ -16,7 +16,10 @@ from sqlalchemy import Engine, func, select
 from sqlalchemy.orm import Session
 
 from hnh.adapters.blobs.filesystem import FileBlobStore
-from hnh.adapters.models.openai_responses import OpenAIResponsesProvider
+from hnh.adapters.models.deepseek_responses import (
+    DeepSeekResponsesProvider,
+    validate_deepseek_configuration,
+)
 from hnh.adapters.postgres.database import build_engine
 from hnh.adapters.postgres.models import EventRecord, ModelCallRecord
 from hnh.application.action_gateway import ActionGateway
@@ -359,6 +362,8 @@ class LiveTaskConfig:
     database_url: str
     api_key: str
     model: str
+    base_url: str
+    reasoning_effort: str
     output: Path
     tenant_id: str
     subject_id: str
@@ -367,33 +372,38 @@ class LiveTaskConfig:
 
     @classmethod
     def from_environment(cls) -> LiveTaskConfig:
-        names = (
+        required = (
             "HNH_DATABASE_URL",
-            "HNH_OPENAI_API_KEY",
-            "HNH_OPENAI_MODEL",
+            "HNH_DEEPSEEK_API_KEY",
             "HNH_EVAL_TASK_OUTPUT",
             "HNH_EVAL_TENANT",
             "HNH_EVAL_SUBJECT",
             "HNH_EVAL_IMPLEMENTATION_REVISION",
         )
-        missing = [name for name in names if not os.environ.get(name)]
+        missing = [name for name in required if not os.environ.get(name)]
         if missing:
             raise ValueError(f"live task evaluation configuration missing: {', '.join(missing)}")
-        values = [os.environ[name] for name in names]
-        output = Path(values[3]).resolve()
+        values = {name: os.environ[name] for name in required}
+        output = Path(values["HNH_EVAL_TASK_OUTPUT"]).resolve()
         if output.exists():
             raise FileExistsError("live task raw JSONL destination already exists")
-        if re.fullmatch(r"[A-Za-z0-9._:/@+-]{1,200}", values[6]) is None:
+        revision = values["HNH_EVAL_IMPLEMENTATION_REVISION"]
+        if re.fullmatch(r"[A-Za-z0-9._:/@+-]{1,200}", revision) is None:
             raise ValueError("HNH_EVAL_IMPLEMENTATION_REVISION has an invalid format")
         blob_root = os.environ.get("HNH_EVAL_BLOB_ROOT")
+        model = os.environ.get("HNH_DEEPSEEK_MODEL", "deepseek-flash")
+        reasoning_effort = os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "high")
+        validate_deepseek_configuration(model, reasoning_effort)
         return cls(
-            database_url=values[0],
-            api_key=values[1],
-            model=values[2],
+            database_url=values["HNH_DATABASE_URL"],
+            api_key=values["HNH_DEEPSEEK_API_KEY"],
+            model=model,
+            base_url=os.environ.get("HNH_DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+            reasoning_effort=reasoning_effort,
             output=output,
-            tenant_id=values[4],
-            subject_id=values[5],
-            implementation_revision=values[6],
+            tenant_id=values["HNH_EVAL_TENANT"],
+            subject_id=values["HNH_EVAL_SUBJECT"],
+            implementation_revision=revision,
             blob_root=Path(blob_root).resolve() if blob_root else None,
         )
 
@@ -408,7 +418,11 @@ def run_live_tasks(config: LiveTaskConfig) -> Path:
     fixtures = live_task_fixtures()
     controls = EvaluationControls(
         model=config.model,
-        model_settings={"max_output_tokens_per_turn": 1024, "stream": False},
+        model_settings={
+            "max_output_tokens_per_turn": 1024,
+            "reasoning_effort": config.reasoning_effort,
+            "stream": False,
+        },
         capability_revision="workspace.file.read:1+artifact.create:1",
         policy_revision="dev-1",
         scopes=tuple(sorted(context.scopes)),
@@ -418,7 +432,9 @@ def run_live_tasks(config: LiveTaskConfig) -> Path:
         environment_hash=stable_hash(
             {
                 "implementation_revision": config.implementation_revision,
-                "model_adapter": "openai-responses",
+                "model_adapter": "deepseek-responses",
+                "model_base_url": config.base_url,
+                "reasoning_effort": config.reasoning_effort,
                 "blob_backend": "filesystem" if config.blob_root is not None else "postgresql",
                 "suite": "p08-live-tasks-v1",
             }
@@ -430,7 +446,12 @@ def run_live_tasks(config: LiveTaskConfig) -> Path:
         executor = LiveTaskExecutor(
             engine,
             context,
-            lambda: OpenAIResponsesProvider(api_key=config.api_key, model=config.model),
+            lambda: DeepSeekResponsesProvider(
+                api_key=config.api_key,
+                model=config.model,
+                base_url=config.base_url,
+                reasoning_effort=config.reasoning_effort,
+            ),
             fixtures,
             campaign_id=uuid4().hex,
             blob_root=config.blob_root,

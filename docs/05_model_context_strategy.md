@@ -6,7 +6,12 @@
 
 定义 `generate(context, tools, limits) -> ModelTurn`。支持完整响应、结构化工具调用、usage、取消/超时和服务错误；流式 token 只是展示。`ModelTurn` 只允许三种动作建议：operations、request_input、final_candidate；最终运行状态由内核提交。
 
-初版提供 ScriptedProvider（确定性单元/集成测试）和一个真实配置式 API provider。provider 名、base_url、model_id、secret_ref 和能力探测由配置决定。可以接 DeepSeek，但不把用户此前 MiniCodex 的模型选择当成强制条件，也不硬编码未经验证的模型型号。兼容 OpenAI 格式不等于支持其所有 strict schema / tool / streaming 细节，必须分别测试。
+初版提供 ScriptedProvider（确定性单元/集成测试）以及可替换的 Responses API
+provider。当前开发 worker 与 live 评估默认使用 DeepSeek，并只接受官方当前列出的
+`deepseek-flash`、`deepseek-v4-pro`；reasoning effort 作为受信任配置写入
+`reasoning.effort`。HTTP-semantic 与 function-tool 两种表面分别经过本地契约测试，
+reasoning item 不写入模型上下文或公开审计响应。OpenAI adapter 仍保留为独立实现，
+但兼容 Responses 格式不等于所有参数行为相同；每个 provider 必须分别测试（R34）。
 
 生成完整响应落库后才准入动作。部分流式 JSON 不可触发执行。Provider 报拒绝或不可解析输出时不能伪造成功；记录明确错误。记录公开输出、结构化行动和证据，不要求或存储隐藏思维链。
 

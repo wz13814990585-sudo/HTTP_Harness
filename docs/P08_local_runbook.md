@@ -33,8 +33,11 @@ uv run uvicorn hnh.transport.http.app:app --host 127.0.0.1 --port 8080
 
 To opt into a separate local worker, configure the **same** database,
 `HNH_DEV_TOKEN`, `HNH_DEV_TENANT`, and `HNH_DEV_SUBJECT` as the API process.
-Provide `HNH_OPENAI_API_KEY` and `HNH_OPENAI_MODEL` through the local secret
-environment, not a checked-in file. In a second terminal:
+Provide `HNH_DEEPSEEK_API_KEY` through the local secret environment, not a
+checked-in file. `HNH_DEEPSEEK_MODEL` defaults to `deepseek-flash` and
+`HNH_DEEPSEEK_REASONING_EFFORT` defaults to `high`; the other supported model
+is `deepseek-v4-pro`, and valid efforts are `none`, `low`, `high`, and `max`.
+In a second terminal:
 
 ```bash
 uv run hnh-dev-worker
@@ -128,7 +131,7 @@ evidence of a successful model call.
 project with placeholder model credentials. It builds the image, starts the
 four services, checks DB-backed readiness and authorized capability discovery,
 then removes only its own containers/network/test volumes. It **does not**
-create a model Run or call OpenAI. The same smoke runs in CI after the
+create a model Run or call DeepSeek. The same smoke runs in CI after the
 PostgreSQL/Docker regression. It passed locally on Docker Desktop; the
 GitHub-hosted workflows also passed this smoke on runs `35765430976` and
 `35766185495`; the latter used Node 24 actions pinned by full commit SHA. These
@@ -231,7 +234,8 @@ AT-030/065/068 are blocked.
 ## Opt-in live evaluation (not production readiness)
 
 Use a separately migrated PostgreSQL database and a fresh raw JSONL path for
-each campaign. Configure `HNH_OPENAI_API_KEY`, `HNH_OPENAI_MODEL`,
+each campaign. Configure `HNH_DEEPSEEK_API_KEY`, optionally
+`HNH_DEEPSEEK_MODEL`/`HNH_DEEPSEEK_REASONING_EFFORT`,
 `HNH_EVAL_TENANT`, `HNH_EVAL_SUBJECT`, and `HNH_DATABASE_URL` in a local secret
 environment; do not paste keys into commands, reports, or chat. Also set
 `HNH_EVAL_IMPLEMENTATION_REVISION` to the exact Git commit, source archive

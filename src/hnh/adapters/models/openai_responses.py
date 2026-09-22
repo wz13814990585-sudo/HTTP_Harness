@@ -103,6 +103,9 @@ FUNCTION_TEXT_SCHEMA: dict[str, Any] = {
 class OpenAIResponsesProvider:
     """Configured non-streaming OpenAI Responses API adapter without hosted tools."""
 
+    _provider_display_name = "OpenAI"
+    _provider_name = "openai-responses"
+
     def __init__(
         self,
         *,
@@ -123,11 +126,20 @@ class OpenAIResponsesProvider:
 
     @property
     def name(self) -> str:
-        return "openai-responses"
+        return self._provider_name
 
     @property
     def model_revision(self) -> str:
         return self._model
+
+    def _provider_request_options(self) -> dict[str, Any]:
+        """Trusted provider-specific request fields.
+
+        These values come from administrator configuration, never from model
+        output or a capability description.
+        """
+
+        return {}
 
     def generate(
         self,
@@ -168,6 +180,7 @@ class OpenAIResponsesProvider:
             "store": False,
             "stream": False,
         }
+        body.update(self._provider_request_options())
         try:
             response = self._client.post(
                 f"{self._base_url}/responses",
@@ -177,16 +190,22 @@ class OpenAIResponsesProvider:
             response.raise_for_status()
             payload = response.json()
         except (httpx.HTTPError, ValueError) as exc:
-            raise ProviderUnavailable("OpenAI Responses API request failed") from exc
+            raise ProviderUnavailable(
+                f"{self._provider_display_name} Responses API request failed"
+            ) from exc
         if not isinstance(payload, dict) or not isinstance(payload.get("output"), list):
-            raise ProviderUnavailable("OpenAI response was not a response object")
+            raise ProviderUnavailable(
+                f"{self._provider_display_name} response was not a response object"
+            )
         if payload.get("status") != "completed":
-            raise ModelOutputInvalid("OpenAI response did not complete")
+            raise ModelOutputInvalid(f"{self._provider_display_name} response did not complete")
         text = self._output_text(payload)
         try:
             output = json.loads(text)
         except json.JSONDecodeError as exc:
-            raise ModelOutputInvalid("OpenAI structured output was not valid JSON") from exc
+            raise ModelOutputInvalid(
+                f"{self._provider_display_name} structured output was not valid JSON"
+            ) from exc
         usage = payload.get("usage")
         return CompleteModelResponse(
             provider_request_id=str(payload["id"]) if payload.get("id") is not None else None,
@@ -229,9 +248,11 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
     response before ActionGateway binds or dispatches anything.
     """
 
+    _function_provider_name = "openai-function-tools"
+
     @property
     def name(self) -> str:
-        return "openai-function-tools"
+        return self._function_provider_name
 
     def generate(
         self,
@@ -277,6 +298,7 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
             "store": False,
             "stream": False,
         }
+        body.update(self._provider_request_options())
         try:
             response = self._client.post(
                 f"{self._base_url}/responses",
@@ -286,11 +308,15 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
             response.raise_for_status()
             payload = response.json()
         except (httpx.HTTPError, ValueError) as exc:
-            raise ProviderUnavailable("OpenAI Responses API request failed") from exc
+            raise ProviderUnavailable(
+                f"{self._provider_display_name} Responses API request failed"
+            ) from exc
         if not isinstance(payload, dict) or not isinstance(payload.get("output"), list):
-            raise ProviderUnavailable("OpenAI response was not a completed response object")
+            raise ProviderUnavailable(
+                f"{self._provider_display_name} response was not a completed response object"
+            )
         if payload.get("status") != "completed":
-            raise ModelOutputInvalid("OpenAI response did not complete")
+            raise ModelOutputInvalid(f"{self._provider_display_name} response did not complete")
         calls = [
             item
             for item in payload["output"]
@@ -328,7 +354,9 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
             try:
                 decision = json.loads(self._output_text(payload))
             except json.JSONDecodeError as exc:
-                raise ModelOutputInvalid("OpenAI structured output was not valid JSON") from exc
+                raise ModelOutputInvalid(
+                    f"{self._provider_display_name} structured output was not valid JSON"
+                ) from exc
             if not isinstance(decision, dict) or set(decision) != {
                 "public_output",
                 "final_candidate",

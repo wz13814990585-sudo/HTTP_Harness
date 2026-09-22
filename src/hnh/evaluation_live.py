@@ -19,9 +19,10 @@ from sqlalchemy.orm import Session
 
 from hnh.adapters.mcp.oauth import InMemoryOAuthTokenStorage, IssuerPinnedOAuthMCPTransport
 from hnh.adapters.mcp.sdk import OfficialSDKMCPClient
-from hnh.adapters.models.openai_responses import (
-    OpenAIFunctionToolsProvider,
-    OpenAIResponsesProvider,
+from hnh.adapters.models.deepseek_responses import (
+    DeepSeekFunctionToolsProvider,
+    DeepSeekResponsesProvider,
+    validate_deepseek_configuration,
 )
 from hnh.adapters.postgres.database import build_engine
 from hnh.adapters.postgres.models import EventRecord, ModelCallRecord
@@ -495,6 +496,8 @@ class LiveEchoConfig:
     database_url: str
     api_key: str
     model: str
+    base_url: str
+    reasoning_effort: str
     mcp_endpoint: str
     mcp_issuer: str
     mcp_resource: str
@@ -507,10 +510,9 @@ class LiveEchoConfig:
 
     @classmethod
     def from_environment(cls) -> LiveEchoConfig:
-        names = (
+        required = (
             "HNH_DATABASE_URL",
-            "HNH_OPENAI_API_KEY",
-            "HNH_OPENAI_MODEL",
+            "HNH_DEEPSEEK_API_KEY",
             "HNH_MCP_ENDPOINT",
             "HNH_MCP_ISSUER",
             "HNH_MCP_RESOURCE",
@@ -521,12 +523,12 @@ class LiveEchoConfig:
             "HNH_EVAL_SUBJECT",
             "HNH_EVAL_IMPLEMENTATION_REVISION",
         )
-        missing = [name for name in names if not os.environ.get(name)]
+        missing = [name for name in required if not os.environ.get(name)]
         if missing:
             raise ValueError(f"live evaluation configuration missing: {', '.join(missing)}")
-        values = [os.environ[name] for name in names]
-        for index in (3, 4, 5):
-            parsed = urlsplit(values[index])
+        values = {name: os.environ[name] for name in required}
+        for name in ("HNH_MCP_ENDPOINT", "HNH_MCP_ISSUER", "HNH_MCP_RESOURCE"):
+            parsed = urlsplit(values[name])
             if (
                 parsed.scheme != "https"
                 or not parsed.hostname
@@ -535,25 +537,31 @@ class LiveEchoConfig:
                 or parsed.query
                 or parsed.fragment
             ):
-                raise ValueError(f"{names[index]} must be a credential-free HTTPS URL")
-        output = Path(values[8]).resolve()
+                raise ValueError(f"{name} must be a credential-free HTTPS URL")
+        output = Path(values["HNH_EVAL_OUTPUT"]).resolve()
         if output.exists():
             raise FileExistsError("live raw JSONL destination already exists")
-        if re.fullmatch(r"[A-Za-z0-9._:/@+-]{1,200}", values[11]) is None:
+        revision = values["HNH_EVAL_IMPLEMENTATION_REVISION"]
+        if re.fullmatch(r"[A-Za-z0-9._:/@+-]{1,200}", revision) is None:
             raise ValueError("HNH_EVAL_IMPLEMENTATION_REVISION has an invalid format")
+        model = os.environ.get("HNH_DEEPSEEK_MODEL", "deepseek-flash")
+        reasoning_effort = os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "high")
+        validate_deepseek_configuration(model, reasoning_effort)
         return cls(
-            database_url=values[0],
-            api_key=values[1],
-            model=values[2],
-            mcp_endpoint=values[3],
-            mcp_issuer=values[4],
-            mcp_resource=values[5],
-            mcp_client_id=values[6],
-            mcp_client_secret=values[7],
+            database_url=values["HNH_DATABASE_URL"],
+            api_key=values["HNH_DEEPSEEK_API_KEY"],
+            model=model,
+            base_url=os.environ.get("HNH_DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+            reasoning_effort=reasoning_effort,
+            mcp_endpoint=values["HNH_MCP_ENDPOINT"],
+            mcp_issuer=values["HNH_MCP_ISSUER"],
+            mcp_resource=values["HNH_MCP_RESOURCE"],
+            mcp_client_id=values["HNH_MCP_CLIENT_ID"],
+            mcp_client_secret=values["HNH_MCP_CLIENT_SECRET"],
             output=output,
-            tenant_id=values[9],
-            subject_id=values[10],
-            implementation_revision=values[11],
+            tenant_id=values["HNH_EVAL_TENANT"],
+            subject_id=values["HNH_EVAL_SUBJECT"],
+            implementation_revision=revision,
         )
 
 
@@ -599,11 +607,16 @@ def run_live_echo(config: LiveEchoConfig) -> Path:
 
     def model_provider(surface: ModelSurface) -> ModelProvider:
         provider_type = (
-            OpenAIFunctionToolsProvider
+            DeepSeekFunctionToolsProvider
             if surface == "native_function_schema"
-            else OpenAIResponsesProvider
+            else DeepSeekResponsesProvider
         )
-        return provider_type(api_key=config.api_key, model=config.model)
+        return provider_type(
+            api_key=config.api_key,
+            model=config.model,
+            base_url=config.base_url,
+            reasoning_effort=config.reasoning_effort,
+        )
 
     cases = live_echo_cases()
     engine = build_engine(config.database_url)
@@ -618,7 +631,11 @@ def run_live_echo(config: LiveEchoConfig) -> Path:
         revision = executor.preflight()
         controls = EvaluationControls(
             model=config.model,
-            model_settings={"max_output_tokens_per_turn": 1024, "stream": False},
+            model_settings={
+                "max_output_tokens_per_turn": 1024,
+                "reasoning_effort": config.reasoning_effort,
+                "stream": False,
+            },
             capability_revision=revision,
             policy_revision=binding.policy_revision,
             scopes=tuple(sorted(context.scopes)),
@@ -628,7 +645,9 @@ def run_live_echo(config: LiveEchoConfig) -> Path:
             environment_hash=stable_hash(
                 {
                     "implementation_revision": config.implementation_revision,
-                    "model_adapter": "openai-responses",
+                    "model_adapter": "deepseek-responses",
+                    "model_base_url": config.base_url,
+                    "reasoning_effort": config.reasoning_effort,
                     "mcp_endpoint": config.mcp_endpoint,
                     "mcp_issuer": config.mcp_issuer,
                     "mcp_resource": config.mcp_resource,

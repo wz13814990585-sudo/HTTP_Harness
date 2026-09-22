@@ -302,7 +302,9 @@ def create_app(
                 database_healthy = True
             except Exception:
                 database_healthy = False
-        configured_model = bool(resolved_settings.openai_api_key and resolved_settings.openai_model)
+        configured_model = bool(
+            resolved_settings.deepseek_api_key and resolved_settings.deepseek_model
+        )
         configured_broker = not isinstance(resolved_broker, UnavailableExecutionBroker)
         body = {
             "core_ready": database_healthy,

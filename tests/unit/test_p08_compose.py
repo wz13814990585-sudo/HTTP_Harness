@@ -22,8 +22,8 @@ def test_dev_compose_pins_images_and_only_publishes_loopback_api() -> None:
     )
     assert services["worker"]["depends_on"]["api"]["condition"] == "service_healthy"
     assert services["api"]["image"] == services["worker"]["image"]
-    assert "HNH_OPENAI_API_KEY" not in services["api"]["environment"]
-    assert "HNH_OPENAI_API_KEY" in services["worker"]["environment"]
+    assert "HNH_DEEPSEEK_API_KEY" not in services["api"]["environment"]
+    assert "HNH_DEEPSEEK_API_KEY" in services["worker"]["environment"]
 
 
 def test_dev_compose_does_not_mount_host_or_docker_socket_into_agent_processes() -> None:

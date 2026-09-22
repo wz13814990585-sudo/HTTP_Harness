@@ -4,8 +4,9 @@ set -euo pipefail
 # Test-only values. Never use this script as a real-model or production demo.
 export HNH_DB_PASSWORD='hnh_smoke_db_only'
 export HNH_DEV_TOKEN='hnh_smoke_token_only'
-export HNH_OPENAI_API_KEY='hnh_smoke_not_a_real_key'
-export HNH_OPENAI_MODEL='hnh-smoke-not-a-real-model'
+export HNH_DEEPSEEK_API_KEY='hnh_smoke_not_a_real_key'
+export HNH_DEEPSEEK_MODEL='deepseek-flash'
+export HNH_DEEPSEEK_REASONING_EFFORT='high'
 export HNH_HTTP_PORT="${HNH_DEV_SMOKE_PORT:-18080}"
 
 project_name="hnh-smoke-$(date +%s)-$$"

@@ -82,9 +82,10 @@ def test_api_and_worker_processes_finish_a_run_over_real_http(clean_postgres: En
             "HNH_DEV_TOKEN": token,
             "HNH_DEV_TENANT": "tenant-p08-topology",
             "HNH_DEV_SUBJECT": "subject-p08-topology",
-            "HNH_OPENAI_API_KEY": "fixture-not-a-secret",
-            "HNH_OPENAI_MODEL": "fixture-model",
-            "HNH_OPENAI_BASE_URL": f"http://127.0.0.1:{model_server.server_port}/v1",
+            "HNH_DEEPSEEK_API_KEY": "fixture-not-a-secret",
+            "HNH_DEEPSEEK_MODEL": "deepseek-flash",
+            "HNH_DEEPSEEK_BASE_URL": f"http://127.0.0.1:{model_server.server_port}/v1",
+            "HNH_DEEPSEEK_REASONING_EFFORT": "high",
         }
     )
     api = subprocess.Popen(
@@ -252,9 +253,10 @@ def test_killed_worker_model_call_is_reclaimed_without_action_replay(
             "HNH_DEV_TOKEN": token,
             "HNH_DEV_TENANT": settings.development_tenant,
             "HNH_DEV_SUBJECT": settings.development_subject,
-            "HNH_OPENAI_API_KEY": "fixture-not-a-secret",
-            "HNH_OPENAI_MODEL": "fixture-model",
-            "HNH_OPENAI_BASE_URL": f"http://127.0.0.1:{server.server_port}/v1",
+            "HNH_DEEPSEEK_API_KEY": "fixture-not-a-secret",
+            "HNH_DEEPSEEK_MODEL": "deepseek-flash",
+            "HNH_DEEPSEEK_BASE_URL": f"http://127.0.0.1:{server.server_port}/v1",
+            "HNH_DEEPSEEK_REASONING_EFFORT": "high",
         }
     )
     first = subprocess.Popen(

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from hnh.adapters.models.deepseek_responses import validate_deepseek_configuration
 from hnh.application.auth import DevelopmentAuthenticator, DevelopmentPrincipal
 
 
@@ -12,13 +13,20 @@ class Settings:
     development_token: str | None
     development_tenant: str = "local"
     development_subject: str = "developer"
-    openai_api_key: str | None = None
-    openai_model: str | None = None
-    openai_base_url: str = "https://api.openai.com/v1"
+    deepseek_api_key: str | None = None
+    deepseek_model: str = "deepseek-flash"
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_reasoning_effort: str = "high"
     sandbox_image: str | None = None
     sandbox_profile_id: str = "python-safe"
     blob_root: str | None = None
     otlp_traces_endpoint: str | None = None
+
+    def __post_init__(self) -> None:
+        validate_deepseek_configuration(
+            self.deepseek_model,
+            self.deepseek_reasoning_effort,
+        )
 
     @classmethod
     def from_environment(cls) -> Settings:
@@ -27,9 +35,10 @@ class Settings:
             development_token=os.environ.get("HNH_DEV_TOKEN"),
             development_tenant=os.environ.get("HNH_DEV_TENANT", "local"),
             development_subject=os.environ.get("HNH_DEV_SUBJECT", "developer"),
-            openai_api_key=os.environ.get("HNH_OPENAI_API_KEY"),
-            openai_model=os.environ.get("HNH_OPENAI_MODEL"),
-            openai_base_url=os.environ.get("HNH_OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            deepseek_api_key=os.environ.get("HNH_DEEPSEEK_API_KEY"),
+            deepseek_model=os.environ.get("HNH_DEEPSEEK_MODEL", "deepseek-flash"),
+            deepseek_base_url=os.environ.get("HNH_DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+            deepseek_reasoning_effort=os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "high"),
             sandbox_image=os.environ.get("HNH_SANDBOX_IMAGE"),
             sandbox_profile_id=os.environ.get("HNH_SANDBOX_PROFILE_ID", "python-safe"),
             blob_root=os.environ.get("HNH_BLOB_ROOT"),

@@ -12,8 +12,7 @@ def test_live_skills_config_requires_credentials_and_fresh_raw_path(
 ) -> None:
     names = (
         "HNH_DATABASE_URL",
-        "HNH_OPENAI_API_KEY",
-        "HNH_OPENAI_MODEL",
+        "HNH_DEEPSEEK_API_KEY",
         "HNH_EVAL_SKILLS_OUTPUT",
         "HNH_EVAL_TENANT",
         "HNH_EVAL_SUBJECT",
@@ -21,12 +20,11 @@ def test_live_skills_config_requires_credentials_and_fresh_raw_path(
     )
     for name in names:
         monkeypatch.delenv(name, raising=False)
-    with pytest.raises(ValueError, match="HNH_OPENAI_API_KEY"):
+    with pytest.raises(ValueError, match="HNH_DEEPSEEK_API_KEY"):
         LiveSkillsConfig.from_environment()
     values = (
         "postgresql+psycopg://localhost/test",
         "test-only-not-real",
-        "controlled-model",
         str(tmp_path / "skills.raw.jsonl"),
         "tenant-test",
         "subject-test",
@@ -37,6 +35,8 @@ def test_live_skills_config_requires_credentials_and_fresh_raw_path(
     config = LiveSkillsConfig.from_environment()
     assert config.output == tmp_path / "skills.raw.jsonl"
     assert config.implementation_revision == "image@sha256:0123456789abcdef"
+    assert config.model == "deepseek-flash"
+    assert config.reasoning_effort == "high"
     config.output.touch()
     with pytest.raises(FileExistsError):
         LiveSkillsConfig.from_environment()

@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, delete, func, select
 from sqlalchemy.orm import Session
 
-from hnh.adapters.models.openai_responses import OpenAIResponsesProvider
+from hnh.adapters.models.deepseek_responses import DeepSeekResponsesProvider
 from hnh.adapters.models.scripted import ScriptedProvider
 from hnh.adapters.postgres.models import (
     ActionRecord,
@@ -500,17 +500,17 @@ def test_at_029_concurrent_budget_reservations_cannot_overdraw(
 def test_at_030_live_model_read_transform_artifact_and_usage(
     clean_postgres: Engine,
 ) -> None:
-    api_key = os.environ.get("HNH_OPENAI_API_KEY")
-    model = os.environ.get("HNH_OPENAI_MODEL")
-    if os.environ.get("HNH_RUN_LIVE_TESTS") != "1" or not api_key or not model:
+    api_key = os.environ.get("HNH_DEEPSEEK_API_KEY")
+    model = os.environ.get("HNH_DEEPSEEK_MODEL", "deepseek-flash")
+    if os.environ.get("HNH_RUN_LIVE_TESTS") != "1" or not api_key:
         pytest.skip(
-            "blocked_environment: set HNH_RUN_LIVE_TESTS=1, HNH_OPENAI_API_KEY, "
-            "and HNH_OPENAI_MODEL for AT-030"
+            "blocked_environment: set HNH_RUN_LIVE_TESTS=1 and HNH_DEEPSEEK_API_KEY for AT-030"
         )
-    provider = OpenAIResponsesProvider(
+    provider = DeepSeekResponsesProvider(
         api_key=api_key,
         model=model,
-        base_url=os.environ.get("HNH_OPENAI_BASE_URL", "https://api.openai.com/v1"),
+        base_url=os.environ.get("HNH_DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+        reasoning_effort=os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "high"),
         timeout_seconds=120,
         client=httpx.Client(timeout=120),
     )
@@ -553,5 +553,5 @@ def test_at_030_live_model_read_transform_artifact_and_usage(
             select(ModelCallRecord).where(ModelCallRecord.run_id == run_id)
         ).all()
         assert calls
-        assert all(call.provider == "openai-responses" for call in calls)
+        assert all(call.provider == "deepseek-responses" for call in calls)
         assert sum(int(call.usage.get("total_tokens", 0)) for call in calls) > 0

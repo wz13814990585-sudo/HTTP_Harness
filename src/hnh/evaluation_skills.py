@@ -11,7 +11,10 @@ from uuid import uuid4
 
 from sqlalchemy import Engine
 
-from hnh.adapters.models.openai_responses import OpenAIResponsesProvider
+from hnh.adapters.models.deepseek_responses import (
+    DeepSeekResponsesProvider,
+    validate_deepseek_configuration,
+)
 from hnh.adapters.postgres.database import build_engine
 from hnh.application.capabilities import CapabilityRegistry
 from hnh.application.skills import SkillLoader
@@ -103,6 +106,8 @@ class LiveSkillsConfig:
     database_url: str
     api_key: str
     model: str
+    base_url: str
+    reasoning_effort: str
     output: Path
     tenant_id: str
     subject_id: str
@@ -110,25 +115,38 @@ class LiveSkillsConfig:
 
     @classmethod
     def from_environment(cls) -> LiveSkillsConfig:
-        names = (
+        required = (
             "HNH_DATABASE_URL",
-            "HNH_OPENAI_API_KEY",
-            "HNH_OPENAI_MODEL",
+            "HNH_DEEPSEEK_API_KEY",
             "HNH_EVAL_SKILLS_OUTPUT",
             "HNH_EVAL_TENANT",
             "HNH_EVAL_SUBJECT",
             "HNH_EVAL_IMPLEMENTATION_REVISION",
         )
-        missing = [name for name in names if not os.environ.get(name)]
+        missing = [name for name in required if not os.environ.get(name)]
         if missing:
             raise ValueError(f"live skills ablation configuration missing: {', '.join(missing)}")
-        values = [os.environ[name] for name in names]
-        output = Path(values[3]).resolve()
+        values = {name: os.environ[name] for name in required}
+        output = Path(values["HNH_EVAL_SKILLS_OUTPUT"]).resolve()
         if output.exists():
             raise FileExistsError("skills ablation raw JSONL destination already exists")
-        if re.fullmatch(r"[A-Za-z0-9._:/@+-]{1,200}", values[6]) is None:
+        revision = values["HNH_EVAL_IMPLEMENTATION_REVISION"]
+        if re.fullmatch(r"[A-Za-z0-9._:/@+-]{1,200}", revision) is None:
             raise ValueError("HNH_EVAL_IMPLEMENTATION_REVISION has an invalid format")
-        return cls(values[0], values[1], values[2], output, values[4], values[5], values[6])
+        model = os.environ.get("HNH_DEEPSEEK_MODEL", "deepseek-flash")
+        reasoning_effort = os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "high")
+        validate_deepseek_configuration(model, reasoning_effort)
+        return cls(
+            values["HNH_DATABASE_URL"],
+            values["HNH_DEEPSEEK_API_KEY"],
+            model,
+            os.environ.get("HNH_DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+            reasoning_effort,
+            output,
+            values["HNH_EVAL_TENANT"],
+            values["HNH_EVAL_SUBJECT"],
+            revision,
+        )
 
 
 def run_live_skills(config: LiveSkillsConfig) -> Path:
@@ -145,14 +163,23 @@ def run_live_skills(config: LiveSkillsConfig) -> Path:
         executor = LiveSkillsAblationExecutor(
             engine,
             context,
-            lambda: OpenAIResponsesProvider(api_key=config.api_key, model=config.model),
+            lambda: DeepSeekResponsesProvider(
+                api_key=config.api_key,
+                model=config.model,
+                base_url=config.base_url,
+                reasoning_effort=config.reasoning_effort,
+            ),
             cases,
             skill_root,
             campaign_id=uuid4().hex,
         )
         controls = EvaluationControls(
             model=config.model,
-            model_settings={"max_output_tokens_per_turn": 1024, "stream": False},
+            model_settings={
+                "max_output_tokens_per_turn": 1024,
+                "reasoning_effort": config.reasoning_effort,
+                "stream": False,
+            },
             capability_revision=executor.capability_revision,
             policy_revision="dev-1",
             scopes=tuple(sorted(context.scopes)),
@@ -162,7 +189,9 @@ def run_live_skills(config: LiveSkillsConfig) -> Path:
             environment_hash=stable_hash(
                 {
                     "implementation_revision": config.implementation_revision,
-                    "model_adapter": "openai-responses",
+                    "model_adapter": "deepseek-responses",
+                    "model_base_url": config.base_url,
+                    "reasoning_effort": config.reasoning_effort,
                     "ablation": "skills-v1",
                 }
             ),

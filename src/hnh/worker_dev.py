@@ -11,7 +11,7 @@ from uuid import uuid4
 from sqlalchemy import Engine
 
 from hnh.adapters.blobs.filesystem import FileBlobStore
-from hnh.adapters.models.openai_responses import OpenAIResponsesProvider
+from hnh.adapters.models.deepseek_responses import DeepSeekResponsesProvider
 from hnh.adapters.postgres.database import build_engine
 from hnh.application.action_gateway import ActionGateway
 from hnh.application.auth import DevelopmentAuthenticator
@@ -50,10 +50,7 @@ def build_development_worker(
     if provider is None and not cancellation_only:
         missing.extend(
             name
-            for name, value in (
-                ("HNH_OPENAI_API_KEY", settings.openai_api_key),
-                ("HNH_OPENAI_MODEL", settings.openai_model),
-            )
+            for name, value in (("HNH_DEEPSEEK_API_KEY", settings.deepseek_api_key),)
             if not value
         )
     if missing:
@@ -79,11 +76,12 @@ def build_development_worker(
     if not cancellation_only:
         resolved_provider = provider
         if resolved_provider is None:
-            assert settings.openai_api_key is not None and settings.openai_model is not None
-            resolved_provider = OpenAIResponsesProvider(
-                api_key=settings.openai_api_key,
-                model=settings.openai_model,
-                base_url=settings.openai_base_url,
+            assert settings.deepseek_api_key is not None
+            resolved_provider = DeepSeekResponsesProvider(
+                api_key=settings.deepseek_api_key,
+                model=settings.deepseek_model,
+                base_url=settings.deepseek_base_url,
+                reasoning_effort=settings.deepseek_reasoning_effort,
             )
         registry = CapabilityRegistry()
         blob_store = FileBlobStore(Path(settings.blob_root)) if settings.blob_root else None

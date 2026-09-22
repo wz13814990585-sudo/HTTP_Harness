@@ -21,8 +21,7 @@ def test_live_task_config_requires_explicit_credentials_and_fresh_raw_path(
 ) -> None:
     names = (
         "HNH_DATABASE_URL",
-        "HNH_OPENAI_API_KEY",
-        "HNH_OPENAI_MODEL",
+        "HNH_DEEPSEEK_API_KEY",
         "HNH_EVAL_TASK_OUTPUT",
         "HNH_EVAL_TENANT",
         "HNH_EVAL_SUBJECT",
@@ -30,12 +29,11 @@ def test_live_task_config_requires_explicit_credentials_and_fresh_raw_path(
     )
     for name in names:
         monkeypatch.delenv(name, raising=False)
-    with pytest.raises(ValueError, match="HNH_OPENAI_API_KEY"):
+    with pytest.raises(ValueError, match="HNH_DEEPSEEK_API_KEY"):
         LiveTaskConfig.from_environment()
     values = (
         "postgresql+psycopg://localhost/test",
         "test-only-not-real",
-        "controlled-model",
         str(tmp_path / "raw.jsonl"),
         "tenant-test",
         "subject-test",
@@ -46,6 +44,8 @@ def test_live_task_config_requires_explicit_credentials_and_fresh_raw_path(
     config = LiveTaskConfig.from_environment()
     assert config.output == tmp_path / "raw.jsonl"
     assert config.implementation_revision == "git:0123456789abcdef"
+    assert config.model == "deepseek-flash"
+    assert config.reasoning_effort == "high"
     config.output.touch()
     with pytest.raises(FileExistsError):
         LiveTaskConfig.from_environment()

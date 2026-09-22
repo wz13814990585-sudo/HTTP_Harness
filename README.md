@@ -126,8 +126,9 @@ curl -i -X POST http://127.0.0.1:8080/v1/runs \
 `docs/` 是完整的架构、协议、状态、存储、安全、模型、MCP、测试和运行方案。`contracts/` 是拟定的 OpenAPI、JSON Schema、状态迁移与示例。`prompts/` 是逐阶段 Codex 任务。`eval/` 包含验收规格、实验定义和部分已实现的可选评估入口。`AGENTS.md` 与 `CODEX_MASTER_PROMPT.md` 用于启动开发。`docs/12_ports_and_execution.md` 给出内部接口、适配器返回约定与执行时序。
 
 初始资料包只附带设计静态校验器；当前仓库已经新增 HTTP 服务、八段数据库迁移和
-P00–P08 的分阶段测试。模型 Runner 已实现，但真实 OpenAI Responses API smoke 因未配置
-`HNH_OPENAI_API_KEY`/`HNH_OPENAI_MODEL` 尚未执行。隔离执行已在本地 Docker Engine
+P00–P08 的分阶段测试。模型 Runner 已实现，当前默认真实 provider 为 DeepSeek
+Responses API；因未配置 `HNH_DEEPSEEK_API_KEY`，live smoke 尚未执行。默认模型为
+`deepseek-flash`，默认 reasoning effort 为 `high`，均可通过受信任环境配置覆盖。隔离执行已在本地 Docker Engine
 中通过 P04 验收，但这不等于对任意敌对多租户代码的生产安全证明；MCP/OAuth 的独立远端验证仍未完成。静态设计校验通过不代表
 这些后续能力、故障恢复或生产安全已经通过。
 

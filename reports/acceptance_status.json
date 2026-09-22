@@ -258,8 +258,8 @@
       "stage": "P03",
       "status": "blocked_environment",
       "tests": ["tests/integration/test_p03_model_loop.py::test_at_030_live_model_read_transform_artifact_and_usage"],
-      "command": "HNH_RUN_LIVE_TESTS=1 HNH_OPENAI_API_KEY=<redacted> HNH_OPENAI_MODEL=<model> scripts/test_with_postgres.sh tests/integration/test_p03_model_loop.py::test_at_030_live_model_read_transform_artifact_and_usage -vv",
-      "reason": "HNH_RUN_LIVE_TESTS, HNH_OPENAI_API_KEY, and HNH_OPENAI_MODEL were not configured. No external request was attempted and the ScriptedProvider/mock-provider tests were not counted as live evidence."
+      "command": "HNH_RUN_LIVE_TESTS=1 HNH_DEEPSEEK_API_KEY=<redacted> HNH_DEEPSEEK_MODEL=deepseek-flash HNH_DEEPSEEK_REASONING_EFFORT=high scripts/test_with_postgres.sh tests/integration/test_p03_model_loop.py::test_at_030_live_model_read_transform_artifact_and_usage -vv",
+      "reason": "HNH_RUN_LIVE_TESTS and HNH_DEEPSEEK_API_KEY were not configured. No external request was attempted and the ScriptedProvider/mock-provider tests were not counted as live evidence."
     },
     {
       "id": "AT-031",

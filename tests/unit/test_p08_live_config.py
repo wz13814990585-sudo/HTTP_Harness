@@ -12,8 +12,10 @@ def test_live_config_fails_closed_without_external_credentials(
 ) -> None:
     for name in (
         "HNH_DATABASE_URL",
-        "HNH_OPENAI_API_KEY",
-        "HNH_OPENAI_MODEL",
+        "HNH_DEEPSEEK_API_KEY",
+        "HNH_DEEPSEEK_MODEL",
+        "HNH_DEEPSEEK_BASE_URL",
+        "HNH_DEEPSEEK_REASONING_EFFORT",
         "HNH_MCP_ENDPOINT",
         "HNH_MCP_ISSUER",
         "HNH_MCP_RESOURCE",
@@ -25,7 +27,7 @@ def test_live_config_fails_closed_without_external_credentials(
         "HNH_EVAL_IMPLEMENTATION_REVISION",
     ):
         monkeypatch.delenv(name, raising=False)
-    with pytest.raises(ValueError, match="HNH_OPENAI_API_KEY"):
+    with pytest.raises(ValueError, match="HNH_DEEPSEEK_API_KEY"):
         LiveEchoConfig.from_environment()
 
 
@@ -42,8 +44,9 @@ def test_live_config_requires_an_explicit_safe_implementation_revision(
 ) -> None:
     values = {
         "HNH_DATABASE_URL": "postgresql+psycopg://localhost/test",
-        "HNH_OPENAI_API_KEY": "test-only-not-real",
-        "HNH_OPENAI_MODEL": "controlled-model",
+        "HNH_DEEPSEEK_API_KEY": "test-only-not-real",
+        "HNH_DEEPSEEK_MODEL": "deepseek-v4-pro",
+        "HNH_DEEPSEEK_REASONING_EFFORT": "max",
         "HNH_MCP_ENDPOINT": "https://mcp.example.test/tools",
         "HNH_MCP_ISSUER": "https://issuer.example.test",
         "HNH_MCP_RESOURCE": "https://mcp.example.test",
@@ -58,6 +61,14 @@ def test_live_config_requires_an_explicit_safe_implementation_revision(
         monkeypatch.setenv(name, value)
     config = LiveEchoConfig.from_environment()
     assert config.implementation_revision == "git:0123456789abcdef"
+    assert config.model == "deepseek-v4-pro"
+    assert config.base_url == "https://api.deepseek.com"
+    assert config.reasoning_effort == "max"
+
+    monkeypatch.setenv("HNH_DEEPSEEK_MODEL", "deepseek-chat")
+    with pytest.raises(ValueError, match="unsupported DeepSeek model"):
+        LiveEchoConfig.from_environment()
+    monkeypatch.setenv("HNH_DEEPSEEK_MODEL", "deepseek-v4-pro")
 
     monkeypatch.setenv("HNH_EVAL_IMPLEMENTATION_REVISION", "unversioned working tree")
     with pytest.raises(ValueError, match="IMPLEMENTATION_REVISION"):

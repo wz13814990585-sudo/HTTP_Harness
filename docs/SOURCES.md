@@ -276,6 +276,18 @@ https://developers.openai.com/codex/guides/agents-md
 https://developers.openai.com/cookbook/articles/codex_exec_plans
 ```
 
+## R34 · DeepSeek Responses API、思考模式与模型目录
+
+用于当前 DeepSeek provider 的 `/responses`、`text.format`、function tools、
+`reasoning.effort`、模型 ID 与 base URL。具体价格会变化，不写入运行契约。
+
+```text
+https://api-docs.deepseek.com/guides/responses_api/
+https://api-docs.deepseek.com/api/create-response/
+https://api-docs.deepseek.com/guides/thinking_mode/
+https://api-docs.deepseek.com/quick_start/pricing/
+```
+
 ## U01 · 用户提供的 Elastik PPT
 
 文件：347c27d5-0064-4778-9053-315fade73b24.pptx。第 12–14 页提供资源地址、header/body 分工与原始/派生内容的设计启发；第 28 页提出用 URL 承载上下文、输出位置和通知的设想。此处不把 PPT 的营销式绝对表述作为技术事实。例如 HMAC 能支持完整性/认证校验，不能证明存储内容在现实中为真；HTTP 形式本身也不能证明模型更擅长操作。
