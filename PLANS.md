@@ -737,6 +737,19 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   Ruff, formatting, mypy, runtime contract comparison and 104/104 design
   checks passed. No live raw dataset was generated; P08 remains in progress.
 
+- 2026-09-23: Started the portfolio/publication track after local P08 closure.
+  Created the repository's first honest implementation snapshot as commit
+  `c31ed80` rather than fabricating incremental history. The README now presents
+  the implemented runtime and its explicit non-production status; `.gitignore`
+  excludes local secrets, live raw JSONL, key material, database dumps, coverage
+  and JUnit output. A filename/pattern scan found no project API key or private
+  key, the package built as sdist and wheel, and design/Ruff/mypy checks passed.
+  No Git remote exists, and the configured GitHub CLI credential is invalid, so
+  remote CI has not run. Project metadata remains deliberately `Proprietary`;
+  choosing an open-source license and repository visibility requires an owner
+  decision. OpenAI and MCP/OAuth environment variables remain unset, so no live
+  evidence was generated.
+
 ## Environment constraints
 
 - No model or MCP endpoint credential variables were present; values were never
