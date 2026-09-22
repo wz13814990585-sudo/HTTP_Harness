@@ -110,6 +110,29 @@ def check_report(
                     issues.append(f"{case_id}:mapped_test_skipped:{reference}")
                 if testcase.find("failure") is not None or testcase.find("error") is not None:
                     issues.append(f"{case_id}:mapped_test_failed:{reference}")
+        optional_live_references = case.get("live_tests", [])
+        if not isinstance(optional_live_references, list):
+            issues.append(f"{case_id}:invalid_live_test_mapping")
+            optional_live_references = []
+        for reference in optional_live_references:
+            if not isinstance(reference, str):
+                issues.append(f"{case_id}:invalid_live_test_reference")
+                continue
+            module, function = _test_key(reference)
+            matches = [
+                (key, testcase)
+                for key, rows in indexed.items()
+                if key[0] == module and (key[1] == function or key[1].startswith(function + "["))
+                for testcase in rows
+            ]
+            if not matches:
+                issues.append(f"{case_id}:live_test_not_collected:{reference}")
+                continue
+            for key, testcase in matches:
+                if testcase.find("skipped") is not None:
+                    expected_skips.add(key)
+                if testcase.find("failure") is not None or testcase.find("error") is not None:
+                    issues.append(f"{case_id}:live_test_failed:{reference}")
         if status == "blocked_environment":
             blocked_tests = case.get("tests", [])
             if not isinstance(blocked_tests, list):

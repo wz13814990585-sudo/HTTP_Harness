@@ -13,7 +13,7 @@ from scripts.check_ci_test_report import check_report, main
 
 
 def _inputs(tmp_path: Path) -> tuple[Path, Path]:
-    suite = ElementTree.Element("testsuite", tests="3", skipped="1")
+    suite = ElementTree.Element("testsuite", tests="4", skipped="2")
     ElementTree.SubElement(
         suite,
         "testcase",
@@ -33,6 +33,13 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path]:
         name="test_live",
     )
     ElementTree.SubElement(live, "skipped", message="external credential absent")
+    optional_live = ElementTree.SubElement(
+        suite,
+        "testcase",
+        classname="tests.integration.test_example",
+        name="test_optional_live",
+    )
+    ElementTree.SubElement(optional_live, "skipped", message="external credential absent")
     junit = tmp_path / "junit.xml"
     ElementTree.ElementTree(suite).write(junit, encoding="unicode")
     acceptance = tmp_path / "acceptance.json"
@@ -51,6 +58,9 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path]:
                         "id": "AT-pass",
                         "status": "passed",
                         "tests": ["tests/integration/test_example.py::test_passed"],
+                        "live_tests": [
+                            "tests/integration/test_example.py::test_optional_live"
+                        ],
                     },
                     {
                         "id": "AT-blocked",
@@ -80,9 +90,9 @@ def test_ci_report_accepts_only_declared_live_skip_and_executed_partial_evidence
     assert result["evidence_consistent"] is True
     assert result["release_ready"] is False
     assert result["blocked_acceptance_ids"] == ["AT-blocked"]
-    assert result["collected_testcases"] == 3
+    assert result["collected_testcases"] == 4
     assert result["mapped_executed_testcases"] == 2
-    assert result["observed_skips"] == result["expected_skips"] == 1
+    assert result["observed_skips"] == result["expected_skips"] == 2
 
 
 def test_ci_report_rejects_missing_passed_test(tmp_path: Path) -> None:
@@ -112,6 +122,34 @@ def test_ci_report_rejects_unexpected_skip_and_stale_summary(tmp_path: Path) -> 
     assert "acceptance_summary_mismatch" in result["issues"]
     assert any("mapped_test_skipped" in item for item in result["issues"])
     assert any("unexpected_skip" in item for item in result["issues"])
+
+
+def test_ci_report_rejects_missing_or_failed_optional_live_test(tmp_path: Path) -> None:
+    junit, acceptance = _inputs(tmp_path)
+    source = json.loads(acceptance.read_text())
+    source["cases"][0]["live_tests"] = [
+        "tests/integration/test_example.py::test_not_collected"
+    ]
+    acceptance.write_text(json.dumps(source))
+    result = check_report(junit, acceptance)
+    assert result["evidence_consistent"] is False
+    assert any("live_test_not_collected" in item for item in result["issues"])
+
+    source["cases"][0]["live_tests"] = [
+        "tests/integration/test_example.py::test_optional_live"
+    ]
+    acceptance.write_text(json.dumps(source))
+    tree = ElementTree.parse(junit)
+    live = tree.getroot().find("testcase[@name='test_optional_live']")
+    assert live is not None
+    skipped = live.find("skipped")
+    assert skipped is not None
+    live.remove(skipped)
+    ElementTree.SubElement(live, "failure", message="provider failed")
+    tree.write(junit, encoding="unicode")
+    result = check_report(junit, acceptance)
+    assert result["evidence_consistent"] is False
+    assert any("live_test_failed" in item for item in result["issues"])
 
 
 def test_release_gate_rejects_declared_blockers_even_when_ci_mapping_is_consistent(

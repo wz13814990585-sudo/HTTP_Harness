@@ -1,0 +1,30 @@
+{
+  "action_capabilities": [
+    "workspace.file.read",
+    "artifact.create"
+  ],
+  "artifact": {
+    "media_type": "text/plain",
+    "sha256": "b7baa74bdf27b597507422b28b42c3c478559b420e139300b901cf38d6e1b4ff",
+    "size_bytes": 19
+  },
+  "implementation_revision": "git:15d2915a0d56635108c948a6ba14675012b99396",
+  "model": "deepseek-flash",
+  "model_calls": 3,
+  "provider": "deepseek-responses",
+  "provider_request_hashes": [
+    "8581aa5f78b023eb57ee57b3030272924d0f825a89aa210ea15914474ca7e174",
+    "96d34d95d72d1d5f20df66a50af83358c1be1f71346f5f25bd4ada32984ca3a2",
+    "fa369503b728b3ef63da5816d21805225f9eca0defb9dcff14ca41b17ec134bc"
+  ],
+  "reasoning_effort": "none",
+  "recorded_at": "2026-09-22T20:10:43.327564+00:00",
+  "run_status": "succeeded",
+  "schema_version": 1,
+  "test": "AT-030",
+  "usage": {
+    "input_tokens": 9502,
+    "output_tokens": 751,
+    "total_tokens": 10253
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "confidence": 1.0,
+  "credential_recorded": false,
+  "implementation_revision": "git:15d2915a0d56635108c948a6ba14675012b99396",
+  "model_version": "jev-1.13.0",
+  "provider": "typesafe-systemone",
+  "recorded_at": "2026-09-22T20:10:56.822613+00:00",
+  "routing_reason": "accepted_hint",
+  "schema_version": 1,
+  "strategy_hint": "simple"
+}

@@ -257,7 +257,8 @@
       "id": "AT-030",
       "stage": "P03",
       "status": "passed",
-      "tests": ["tests/integration/test_p03_model_loop.py::test_at_030_live_model_read_transform_artifact_and_usage"],
+      "tests": ["tests/contract/test_live_evidence.py::test_at_030_recorded_live_evidence_is_sanitized_and_complete"],
+      "live_tests": ["tests/integration/test_p03_model_loop.py::test_at_030_live_model_read_transform_artifact_and_usage"],
       "command": "HNH_RUN_LIVE_TESTS=1 HNH_DEEPSEEK_API_KEY=<redacted> HNH_DEEPSEEK_MODEL=deepseek-flash HNH_DEEPSEEK_REASONING_EFFORT=none scripts/test_with_postgres.sh tests/integration/test_p03_model_loop.py::test_at_030_live_model_read_transform_artifact_and_usage -q --tb=short",
       "evidence": "A real DeepSeek Responses run completed the durable read -> exact uppercase transform -> immutable text/plain Artifact chain twice with the final environment configuration. The test verified bytes, successful read/create Action evidence, evidence-gated Run success, provider identity, and nonzero provider-reported token usage. Earlier high/low reasoning attempts returned incomplete or invalid output and are not counted as passes; JSON mode plus local validation and a bounded non-thinking tool-loop configuration closed the live gate."
     },
@@ -537,7 +538,8 @@
       "id": "AT-060",
       "stage": "P07",
       "status": "passed",
-      "tests": ["tests/integration/test_p07_extensions.py::test_at_060_classifier_off_timeout_or_bad_output_falls_back_without_blocking_task", "tests/integration/test_p07_extensions.py::test_classifier_configuration_rejects_nonfinite_or_boolean_limits", "tests/integration/test_p07_typesafe_live.py::test_live_typesafe_strategy_choice_matches_guarded_router_contract"],
+      "tests": ["tests/integration/test_p07_extensions.py::test_at_060_classifier_off_timeout_or_bad_output_falls_back_without_blocking_task", "tests/integration/test_p07_extensions.py::test_classifier_configuration_rejects_nonfinite_or_boolean_limits"],
+      "live_tests": ["tests/integration/test_p07_typesafe_live.py::test_live_typesafe_strategy_choice_matches_guarded_router_contract"],
       "command": "scripts/test_with_postgres.sh tests/integration/test_p07_extensions.py tests/integration/test_p08_dev_worker_entrypoint.py -q --tb=short && HNH_RUN_LIVE_TESTS=1 TYPESAFE_API_KEY=<redacted> .venv/bin/pytest tests/integration/test_p07_typesafe_live.py -q --tb=short",
       "evidence": "Five parameterized real-PostgreSQL cases used disabled, timed-out, invalid-label, malformed-object, and boolean-confidence classifier output; the ordinary file task still executed with persisted simple fallback. Non-finite/boolean configuration is rejected. The optional TypeSafe System One Choice adapter also completed one real external contract call and returned only a validated simple/plan_hint suggestion; vendor benefit or calibration is not inferred from that one call."
     },
