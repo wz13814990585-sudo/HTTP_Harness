@@ -78,7 +78,7 @@ def test_api_and_worker_processes_finish_a_run_over_real_http(clean_postgres: En
     environment = {name: value for name, value in os.environ.items() if not name.startswith("HNH_")}
     environment.update(
         {
-            "HNH_DATABASE_URL": str(clean_postgres.url),
+            "HNH_DATABASE_URL": clean_postgres.url.render_as_string(hide_password=False),
             "HNH_DEV_TOKEN": token,
             "HNH_DEV_TENANT": "tenant-p08-topology",
             "HNH_DEV_SUBJECT": "subject-p08-topology",
@@ -135,7 +135,7 @@ def test_api_and_worker_processes_finish_a_run_over_real_http(clean_postgres: En
             controller = RunController(clean_postgres)
             actor = (
                 Settings(
-                    database_url=str(clean_postgres.url),
+                    database_url=clean_postgres.url.render_as_string(hide_password=False),
                     development_token=token,
                     development_tenant="tenant-p08-topology",
                     development_subject="subject-p08-topology",
@@ -219,7 +219,7 @@ def test_killed_worker_model_call_is_reclaimed_without_action_replay(
     server_thread.start()
     token = "local-chaos-token"
     settings = Settings(
-        database_url=str(clean_postgres.url),
+        database_url=clean_postgres.url.render_as_string(hide_password=False),
         development_token=token,
         development_tenant="tenant-p08-chaos",
         development_subject="subject-p08-chaos",

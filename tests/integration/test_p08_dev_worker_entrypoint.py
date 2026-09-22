@@ -148,7 +148,7 @@ def test_dev_worker_confirms_api_requested_cancellation_without_model_call(
 @pytest.mark.postgres
 def test_cancel_only_cli_does_not_need_model_or_claim_ordinary_run(clean_postgres: Engine) -> None:
     settings = Settings(
-        database_url=str(clean_postgres.url),
+        database_url=clean_postgres.url.render_as_string(hide_password=False),
         development_token="cancel-only-local-token",
         development_tenant="tenant-p08-cancel-only",
         development_subject="subject-p08-cancel-only",
@@ -209,7 +209,7 @@ def test_dev_worker_artifact_is_readable_from_api_shared_blob_root(
     clean_postgres: Engine, tmp_path: Path
 ) -> None:
     settings = Settings(
-        database_url=str(clean_postgres.url),
+        database_url=clean_postgres.url.render_as_string(hide_password=False),
         development_token="blob-local-dev-token",
         development_tenant="tenant-p08-shared-blob",
         development_subject="subject-p08-shared-blob",
@@ -268,7 +268,7 @@ def test_dev_worker_cli_process_completes_api_run_against_local_model_fixture(
     clean_postgres: Engine,
 ) -> None:
     settings = Settings(
-        database_url=str(clean_postgres.url),
+        database_url=clean_postgres.url.render_as_string(hide_password=False),
         development_token="process-local-dev-token",
         development_tenant="tenant-p08-process",
         development_subject="subject-p08-process",
