@@ -761,9 +761,12 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   the 68-ID acceptance execution gate, runtime contract comparison and the
   development Compose smoke. The run is real remote CI evidence, but still not
   a live model, independent MCP or production deployment. CI actions were then
-  upgraded to their current Node 24 releases and pinned by full commit SHA;
-  the follow-up workflow must remain green before treating that maintenance
-  change as verified.
+  upgraded to their current Node 24 releases and pinned by full commit SHA.
+  Follow-up run `35766185495` passed the same quality, migration, full
+  regression, acceptance, contract and Compose gates in 2m49s, removing the
+  prior Node 20 warning. The repository has no local `.env`, so AT-030 remains
+  blocked until the owner configures the live API key and model without
+  committing them.
 
 ## Environment constraints
 

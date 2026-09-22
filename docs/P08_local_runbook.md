@@ -130,9 +130,10 @@ four services, checks DB-backed readiness and authorized capability discovery,
 then removes only its own containers/network/test volumes. It **does not**
 create a model Run or call OpenAI. The same smoke runs in CI after the
 PostgreSQL/Docker regression. It passed locally on Docker Desktop; the
-GitHub-hosted workflow also passed this smoke on run `35765430976`. That run
-used placeholder model configuration and remains deployment wiring evidence,
-not a live provider or production deployment result.
+GitHub-hosted workflows also passed this smoke on runs `35765430976` and
+`35766185495`; the latter used Node 24 actions pinned by full commit SHA. These
+runs used placeholder model configuration and remain deployment wiring
+evidence, not live provider or production deployment results.
 
 ## Back up and restore
 
@@ -219,7 +220,8 @@ uv run python scripts/check_ci_test_report.py \
   --spec eval/acceptance_cases.yaml
 ```
 
-This gate has been exercised locally and on GitHub-hosted run `35765430976`.
+This gate has been exercised locally and on GitHub-hosted runs `35765430976`
+and `35766185495`.
 The hosted runner pulled the digest-pinned amd64 Python sandbox image, completed
 the PostgreSQL/Docker regression, passed the 68-ID acceptance execution gate,
 the runtime API contract check and the development Compose smoke. The strict
