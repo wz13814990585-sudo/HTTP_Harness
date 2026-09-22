@@ -130,7 +130,9 @@ four services, checks DB-backed readiness and authorized capability discovery,
 then removes only its own containers/network/test volumes. It **does not**
 create a model Run or call OpenAI. The same smoke runs in CI after the
 PostgreSQL/Docker regression. It passed locally on Docker Desktop; the
-GitHub Actions workflow itself still has no remote run evidence.
+GitHub-hosted workflow also passed this smoke on run `35765430976`. That run
+used placeholder model configuration and remains deployment wiring evidence,
+not a live provider or production deployment result.
 
 ## Back up and restore
 
@@ -217,11 +219,12 @@ uv run python scripts/check_ci_test_report.py \
   --spec eval/acceptance_cases.yaml
 ```
 
-This gate has been exercised locally with real PostgreSQL/Docker regression;
-the GitHub Actions workflow itself has not run because this repository has
-no configured remote. An OCI-index descriptor was checked for the pinned
-Python sandbox image, but registry access was unavailable, so amd64 pull on
-the hosted runner remains unverified.
+This gate has been exercised locally and on GitHub-hosted run `35765430976`.
+The hosted runner pulled the digest-pinned amd64 Python sandbox image, completed
+the PostgreSQL/Docker regression, passed the 68-ID acceptance execution gate,
+the runtime API contract check and the development Compose smoke. The strict
+release gate remains tag-only and is expected to reject a release while
+AT-030/065/068 are blocked.
 
 ## Opt-in live evaluation (not production readiness)
 

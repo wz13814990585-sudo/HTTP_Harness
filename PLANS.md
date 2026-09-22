@@ -750,6 +750,21 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   decision. OpenAI and MCP/OAuth environment variables remain unset, so no live
   evidence was generated.
 
+- 2026-09-23: Connected and pushed `main` to
+  `wz13814990585-sudo/HTTP_Harness`. The first GitHub-hosted workflow exposed
+  six test call sites that rendered SQLAlchemy URLs with their password hidden;
+  four process tests consequently failed against CI's password-protected
+  PostgreSQL. Commit `289ffbb` now uses explicit non-redacted rendering only
+  when passing the trusted test database URL to child processes. The targeted
+  local process suite passed 8/8. GitHub run `35765430976` then passed quality,
+  migration round-trip/drift, the full PostgreSQL/Docker/security/chaos suite,
+  the 68-ID acceptance execution gate, runtime contract comparison and the
+  development Compose smoke. The run is real remote CI evidence, but still not
+  a live model, independent MCP or production deployment. CI actions were then
+  upgraded to their current Node 24 releases and pinned by full commit SHA;
+  the follow-up workflow must remain green before treating that maintenance
+  change as verified.
+
 ## Environment constraints
 
 - No model or MCP endpoint credential variables were present; values were never

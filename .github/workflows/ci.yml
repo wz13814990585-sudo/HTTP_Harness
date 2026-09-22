@@ -11,8 +11,8 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.9.21"
           enable-cache: true
@@ -50,8 +50,8 @@ jobs:
       HNH_TEST_DATABASE_URL: postgresql+psycopg://hnh_test:hnh_ci_only@127.0.0.1:5432/hnh_test
       HNH_TEST_SANDBOX_IMAGE: python@sha256:1dd3dca85e22886e44fcad1bb7ccab6691dfa83db52214cf9e20696e095f3e36
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.9.21"
           enable-cache: true
@@ -76,7 +76,7 @@ jobs:
         run: uv run python scripts/check_ci_test_report.py ci-test-results.xml reports/acceptance_status.json --spec eval/acceptance_cases.yaml --require-release-ready
       - name: Preserve runtime test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: runtime-test-results
           path: ci-test-results.xml

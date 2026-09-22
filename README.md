@@ -1,5 +1,7 @@
 # HTTP-native Agent Harness
 
+[![CI](https://github.com/wz13814990585-sudo/HTTP_Harness/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/wz13814990585-sudo/HTTP_Harness/actions/workflows/ci.yml)
+
 **持久化、策略受控、以执行证据为完成依据的 Agent 运行内核。**
 
 版本：`0.1.0.dev0` · 更新：2026-09-23 · P00–P07 本地验收通过；P08
