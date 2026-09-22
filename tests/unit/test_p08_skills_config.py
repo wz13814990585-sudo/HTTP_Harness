@@ -36,7 +36,7 @@ def test_live_skills_config_requires_credentials_and_fresh_raw_path(
     assert config.output == tmp_path / "skills.raw.jsonl"
     assert config.implementation_revision == "image@sha256:0123456789abcdef"
     assert config.model == "deepseek-flash"
-    assert config.reasoning_effort == "high"
+    assert config.reasoning_effort == "none"
     config.output.touch()
     with pytest.raises(FileExistsError):
         LiveSkillsConfig.from_environment()

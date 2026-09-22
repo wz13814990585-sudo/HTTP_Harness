@@ -392,7 +392,7 @@ class LiveTaskConfig:
             raise ValueError("HNH_EVAL_IMPLEMENTATION_REVISION has an invalid format")
         blob_root = os.environ.get("HNH_EVAL_BLOB_ROOT")
         model = os.environ.get("HNH_DEEPSEEK_MODEL", "deepseek-flash")
-        reasoning_effort = os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "high")
+        reasoning_effort = os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "none")
         validate_deepseek_configuration(model, reasoning_effort)
         return cls(
             database_url=values["HNH_DATABASE_URL"],

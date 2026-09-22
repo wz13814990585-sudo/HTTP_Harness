@@ -1,11 +1,9 @@
 # Living implementation plan
 
-Status: implementation in progress. P00 through P02, P04, P05, P06's local
-acceptance, and P07's local
-acceptance slice are complete. P03's
-local implementation and AT-022–AT-029 gates pass; its stage exit is blocked only
-by the explicitly configured live-provider AT-030. P04 was implemented and tested
-independently without substituting sandbox evidence for that missing model evidence;
+Status: implementation in progress. P00 through P05, P06's local acceptance,
+and P07 acceptance are complete. P03's AT-022–AT-030 gates now pass, including
+the real DeepSeek read/transform/Artifact run. P04 was implemented and tested
+independently without substituting sandbox evidence for model evidence;
 P05 likewise does not treat its deterministic effect driver as a live model or remote
 service integration. P06 has a tested local official-SDK/official-server adapter,
 request-scoped trusted integration composition, and issuer-pinned OAuth
@@ -31,11 +29,11 @@ An independent HTTP-native harness with one durable state owner, controlled side
 | P00 | complete | `reports/implementation/P00.md`; AT-001/002 passed |
 | P01 | complete | `reports/implementation/P01.md`; AT-003–011 passed on PostgreSQL |
 | P02 | complete | `reports/implementation/P02.md`; AT-012–021 passed on PostgreSQL |
-| P03 | blocked_environment | `reports/implementation/P03.md`; AT-022–029 passed; AT-030 blocked |
+| P03 | complete | `reports/implementation/P03.md`; AT-022–030 passed, including real DeepSeek |
 | P04 | complete | `reports/implementation/P04.md`; AT-031–038 passed on PostgreSQL and real Docker where required |
 | P05 | complete | `reports/implementation/P05.md`; AT-039–052 passed on PostgreSQL |
 | P06 | complete_local | `reports/implementation/P06.md`; AT-053–059 passed within the reported local interoperability/security scope |
-| P07 | complete_local | `reports/implementation/P07.md`; AT-060–064 passed with scripted model and real PostgreSQL; no live TypeSafe claim |
+| P07 | complete | `reports/implementation/P07.md`; AT-060–064 passed; live TypeSafe contract verified without benefit claim |
 | P08 | blocked_environment | `reports/implementation/P08.md`; local machinery and AT-066/067 pass; AT-065/068 require live model/remote service evidence |
 
 ## Current task
@@ -47,13 +45,14 @@ issuer guard now passes, but a managed credential backend, refresh drill and
 independent remote interoperability remain future production-hardening work.
 P08 still needs a production-configured model worker,
 four live comparable model/downstream arms, raw live task runs, deployment and CI
-exercise, and complete observability/operational gates. The environment has no
-`HNH_DEEPSEEK_API_KEY` or independent MCP/OAuth endpoint. DeepSeek is now the
-configured live provider; TypeSafe remains an optional disabled P07 adapter.
+exercise, and complete observability/operational gates. The local ignored
+environment now has working DeepSeek and TypeSafe credentials, but no independent
+MCP/OAuth endpoint. DeepSeek is the configured live provider; TypeSafe is an
+explicit optional P07 adapter and is enabled only in local worker configuration.
 The opt-in live echo entrypoint has four fixed input variants of one read-only
 capability. A separate three-task read/transform/artifact suite is now
-implemented for AT-068 and passed only with a mocked model. Neither entrypoint
-has produced real-model raw data; echo alone cannot prove the broader gate.
+implemented for AT-068 and has so far passed only with a mocked model. AT-030 is
+real-model evidence but is not a task-suite dataset; AT-065/068 remain open.
 The local P07 integration tests and P08 backup/readiness tests pass, but scripted
 providers and controlled executors are not live evidence. Keep `reports/implementation`
 and `reports/acceptance_status.json` synchronized with each completed gate.
@@ -785,11 +784,21 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   105/105 static design checks passed. This is compatibility and regression
   evidence, not a real DeepSeek call or live evaluation result.
 
+- 2026-09-23: Added the optional TypeSafe System One Choice adapter and wired it
+  into the development worker behind `HNH_TYPESAFE_ENABLED`. A real external
+  contract call passed; five fallback modes and worker construction passed on
+  real PostgreSQL. Confidence is validated independently from the selected
+  probability and never grants authority. The DeepSeek HTTP-semantic adapter
+  moved to JSON output plus local validation because its strict schema dialect
+  rejects the intentionally open JSON payload value. With the bounded tool-loop
+  default `reasoning.effort=none`, AT-030 passed twice using the final local
+  configuration; earlier high/low incomplete/invalid attempts are not counted.
+
 ## Environment constraints
 
-- No model or MCP endpoint credential variables were present; values were never
-  printed. `HNH_DEEPSEEK_API_KEY` and MCP endpoint/client variables remain
-  unset. Temporary local PostgreSQL 14 is available for tests.
+- Model credentials now exist only in the ignored local `.env`; values were never
+  printed or committed. Independent MCP endpoint/client variables remain unset.
+  Temporary local PostgreSQL 14 is available for tests.
 - Docker Engine was started for P04 and its real sandbox tests passed. Continued
   sandbox operation requires a running daemon and an explicitly configured image
   pinned by `@sha256:`; absence fails closed with `execution_unavailable`.
@@ -798,9 +807,8 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
 
 ## Acceptance evidence
 
-`reports/acceptance_status.json` maps all AT IDs: 65 passed and 3
-blocked_environment (AT-030, AT-065, AT-068; the latter two live evaluations
-have not run).
+`reports/acceptance_status.json` maps all AT IDs: 66 passed and 2
+blocked_environment (AT-065 and AT-068).
 P00–P08 executed evidence is in
 `reports/implementation/`. `reports/design_validation.*` describes only
 static design consistency and is not counted as runtime acceptance evidence.

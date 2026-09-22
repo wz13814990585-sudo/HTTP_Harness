@@ -37,6 +37,7 @@ def test_at_067_readiness_distinguishes_healthy_database_from_missing_optional_s
     assert response.json()["components"]["database"] == "ready"
     assert response.json()["components"]["isolated_broker_configuration"] == "missing"
     assert response.json()["components"]["model_configuration"] == "missing"
+    assert response.json()["components"]["typesafe_classifier"] == "disabled"
 
 
 @pytest.mark.postgres

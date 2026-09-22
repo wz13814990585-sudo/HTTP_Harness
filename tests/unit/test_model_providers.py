@@ -75,7 +75,14 @@ def test_deepseek_responses_provider_sends_reasoning_without_persisting_it() -> 
     assert captured["url"] == "https://deepseek.example.test/responses"
     assert captured["authorization"] == "Bearer deepseek-test-secret"
     assert captured["body"]["reasoning"] == {"effort": "max"}
-    assert captured["body"]["text"]["format"]["type"] == "json_schema"
+    assert captured["body"]["text"]["format"]["type"] == "json_object"
+    deepseek_input = json.loads(captured["body"]["input"])
+    assert deepseek_input["output_contract"]["required"] == [
+        "public_output",
+        "operations",
+        "final_candidate",
+        "request_input",
+    ]
     assert provider.name == "deepseek-responses"
     assert response.output == decision
     assert response.raw_response["output"] == [
@@ -156,6 +163,7 @@ def test_deepseek_function_provider_decodes_calls_through_common_codec() -> None
 
     assert provider.name == "deepseek-function-tools"
     assert captured["body"]["reasoning"] == {"effort": "low"}
+    assert captured["body"]["text"]["format"]["type"] == "json_object"
     assert response.output["operations"] == [
         {
             "method": "POST",

@@ -166,10 +166,13 @@ https://pypi.org/project/curldb/
 
 ## R21 · TypeSafe API 概览
 
-结构化选择与评分等决策接口。
+结构化选择与评分等决策接口。Quick Start 同时定义了 bearer 认证、
+`POST https://api.typesafe.ai/v1/systemone`、`jev-latest` 和 SDK 默认读取的
+`TYPESAFE_API_KEY`。2026-09-23 核验。
 
 ```text
 https://docs.typesafe.ai/introduction
+https://docs.typesafe.ai/introduction/quickstart
 ```
 
 ## R22 · TypeSafe Confidence

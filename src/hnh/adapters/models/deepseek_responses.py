@@ -40,7 +40,7 @@ class DeepSeekResponsesProvider(OpenAIResponsesProvider):
         api_key: str,
         model: str = "deepseek-flash",
         base_url: str = DEEPSEEK_BASE_URL,
-        reasoning_effort: str = "high",
+        reasoning_effort: str = "none",
         timeout_seconds: float = 120.0,
         client: httpx.Client | None = None,
     ) -> None:
@@ -55,7 +55,18 @@ class DeepSeekResponsesProvider(OpenAIResponsesProvider):
         )
 
     def _provider_request_options(self) -> dict[str, Any]:
-        return {"reasoning": {"effort": self._reasoning_effort}}
+        return {"reasoning": {"effort": self._reasoning_effort}, "temperature": 0.0}
+
+    def _text_format(self, name: str, schema: dict[str, Any]) -> dict[str, Any]:
+        del name, schema
+        # The Harness HttpOperation payload intentionally accepts arbitrary JSON
+        # before capability-specific validation. DeepSeek's strict schema dialect
+        # rejects that open value, so use JSON mode and retain deterministic local
+        # validation before Action admission.
+        return {"type": "json_object"}
+
+    def _input_contract(self, schema: dict[str, Any]) -> dict[str, Any]:
+        return {"output_contract": schema}
 
 
 class DeepSeekFunctionToolsProvider(OpenAIFunctionToolsProvider):
@@ -71,7 +82,7 @@ class DeepSeekFunctionToolsProvider(OpenAIFunctionToolsProvider):
         api_key: str,
         model: str = "deepseek-flash",
         base_url: str = DEEPSEEK_BASE_URL,
-        reasoning_effort: str = "high",
+        reasoning_effort: str = "none",
         timeout_seconds: float = 120.0,
         client: httpx.Client | None = None,
     ) -> None:
@@ -86,4 +97,11 @@ class DeepSeekFunctionToolsProvider(OpenAIFunctionToolsProvider):
         )
 
     def _provider_request_options(self) -> dict[str, Any]:
-        return {"reasoning": {"effort": self._reasoning_effort}}
+        return {"reasoning": {"effort": self._reasoning_effort}, "temperature": 0.0}
+
+    def _text_format(self, name: str, schema: dict[str, Any]) -> dict[str, Any]:
+        del name, schema
+        return {"type": "json_object"}
+
+    def _input_contract(self, schema: dict[str, Any]) -> dict[str, Any]:
+        return {"output_contract": schema}

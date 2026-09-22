@@ -11,6 +11,7 @@ from uuid import uuid4
 from sqlalchemy import Engine
 
 from hnh.adapters.blobs.filesystem import FileBlobStore
+from hnh.adapters.decision.typesafe import TypeSafeDecisionProvider
 from hnh.adapters.models.deepseek_responses import DeepSeekResponsesProvider
 from hnh.adapters.postgres.database import build_engine
 from hnh.application.action_gateway import ActionGateway
@@ -18,6 +19,7 @@ from hnh.application.auth import DevelopmentAuthenticator
 from hnh.application.capabilities import CapabilityRegistry
 from hnh.application.completion import CompletionGate
 from hnh.application.context import ContextBuilder
+from hnh.application.decision import DecisionRouter
 from hnh.application.resources import ResourceStore
 from hnh.application.run_controller import RunController
 from hnh.application.run_worker import RunWorker
@@ -86,12 +88,26 @@ def build_development_worker(
         registry = CapabilityRegistry()
         blob_store = FileBlobStore(Path(settings.blob_root)) if settings.blob_root else None
         resources = ResourceStore(resolved_engine, blob_store)
+        decision_router = DecisionRouter()
+        if settings.typesafe_enabled:
+            assert settings.typesafe_api_key is not None
+            decision_router = DecisionRouter(
+                TypeSafeDecisionProvider(
+                    api_key=settings.typesafe_api_key,
+                    model=settings.typesafe_model,
+                    endpoint=settings.typesafe_base_url,
+                    request_timeout_seconds=settings.typesafe_timeout_seconds,
+                ),
+                timeout_seconds=settings.typesafe_timeout_seconds,
+                min_confidence=settings.typesafe_min_confidence,
+            )
         runner = Runner(
             controller,
             ContextBuilder(controller, registry),
             ActionGateway(resolved_engine, registry, resources, controller),
             CompletionGate(resolved_engine, controller),
             resolved_provider,
+            decision_router=decision_router,
         )
     return RunWorker(
         controller,

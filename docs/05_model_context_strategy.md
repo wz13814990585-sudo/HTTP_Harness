@@ -39,9 +39,15 @@ SimpleStrategy 是默认模型—工具循环；PlannedStrategy 仅多一个版�
 
 提供 `DecisionProvider.classify(request, allowed_labels)`；返回 label、confidence、distribution 与 provider/version。可选标签先限制为任务类别和执行策略建议，不让分类器决定授权、最终成功或 unsafe retry。
 
-默认关闭，避免把额外网络模型变成启动必需项。接入时添加 timeout、熔断、结果 schema、脱敏与本地评测；失败时退回简单保守策略。不得在 README 宣称更快/更准，除非有本项目同任务数据验证。
+代码默认关闭，避免把额外网络模型变成启动必需项。当前开发 worker 可通过
+`HNH_TYPESAFE_ENABLED=1` 显式启用 System One Choice adapter；它使用服务端
+`TYPESAFE_API_KEY`、固定 HTTPS endpoint、短超时、禁止重定向/环境代理，并在任何
+失败或低置信度时退回 `simple`。不得在 README 宣称更快/更准，除非有本项目同任务
+数据验证。
 
-TypeSafe 的 confidence 与真实正确率不是同一概念；以本地测试估计误路由、拒识覆盖与可靠性，需要时计算校准指标。置信度高也不能替代用户审批（R22）。
+TypeSafe 的 confidence 是从整个概率分布导出的统计量，不等于所选标签自身的概率，
+也不等于真实正确率；以本地测试估计误路由、拒识覆盖与可靠性，需要时计算校准指标。
+置信度高也不能替代用户审批（R22）。
 
 ## 6. Skills
 

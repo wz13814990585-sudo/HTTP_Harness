@@ -127,17 +127,19 @@ curl -i -X POST http://127.0.0.1:8080/v1/runs \
 
 初始资料包只附带设计静态校验器；当前仓库已经新增 HTTP 服务、八段数据库迁移和
 P00–P08 的分阶段测试。模型 Runner 已实现，当前默认真实 provider 为 DeepSeek
-Responses API；因未配置 `HNH_DEEPSEEK_API_KEY`，live smoke 尚未执行。默认模型为
-`deepseek-flash`，默认 reasoning effort 为 `high`，均可通过受信任环境配置覆盖。隔离执行已在本地 Docker Engine
+Responses API；AT-030 已用真实 DeepSeek 与 PostgreSQL 完成读取、转换、Artifact 和
+证据门禁闭环。默认模型为 `deepseek-flash`，工具循环默认 reasoning effort 为
+`none`，均可通过受信任环境配置覆盖。TypeSafe System One 是默认关闭的可选策略
+分类器，已完成真实 API 契约验证，但尚无收益/校准结论。隔离执行已在本地 Docker Engine
 中通过 P04 验收，但这不等于对任意敌对多租户代码的生产安全证明；MCP/OAuth 的独立远端验证仍未完成。静态设计校验通过不代表
 这些后续能力、故障恢复或生产安全已经通过。
 
 P05 的恢复验收使用确定性的进程内故障 effect driver，并非真实远端服务；DNS/跳转
 测试也使用受控 resolver，并非生产网络抓包或完整出站代理证明。因此 P05 阶段完成，
-但在 AT-030 真实模型门禁关闭前，不把整个 v0.1 出口称为完整通过。
+但 AT-065/068 的独立 MCP/OAuth 与真实任务评估完成前，不把整个发布出口称为完整通过。
 
 CI 区分“验收证据映射一致”和“可以发布”：当前 68 项映射检查通过，但
-AT-030、AT-065、AT-068 未完成，严格发布门禁会返回非零状态；见
+AT-065、AT-068 未完成，严格发布门禁会返回非零状态；见
 `scripts/check_ci_test_report.py` 与 `reports/acceptance_status.json`。
 
 ## 建议使用方式

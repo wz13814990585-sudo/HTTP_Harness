@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime
+from hashlib import sha256
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -510,7 +513,7 @@ def test_at_030_live_model_read_transform_artifact_and_usage(
         api_key=api_key,
         model=model,
         base_url=os.environ.get("HNH_DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-        reasoning_effort=os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "high"),
+        reasoning_effort=os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "none"),
         timeout_seconds=120,
         client=httpx.Client(timeout=120),
     )
@@ -541,7 +544,20 @@ def test_at_030_live_model_read_transform_artifact_and_usage(
 
     result = runner.run_to_terminal(CONTEXT, run_id, max_steps=12)
 
-    assert result.status == RunStatus.SUCCEEDED
+    if result.status != RunStatus.SUCCEEDED:
+        with Session(clean_postgres) as session:
+            invalid_details = [
+                event.data.get("detail")
+                for event in session.scalars(
+                    select(EventRecord)
+                    .where(
+                        EventRecord.run_id == run_id,
+                        EventRecord.event_type == "model.output_invalid",
+                    )
+                    .order_by(EventRecord.seq)
+                )
+            ]
+        pytest.fail(f"live Run failed: {result.failure}; invalid_details={invalid_details}")
     assert len(result.result_artifact_ids) == 1
     content, media_type, _etag = resources.get_artifact_content(
         CONTEXT, result.result_artifact_ids[0]
@@ -555,3 +571,37 @@ def test_at_030_live_model_read_transform_artifact_and_usage(
         assert calls
         assert all(call.provider == "deepseek-responses" for call in calls)
         assert sum(int(call.usage.get("total_tokens", 0)) for call in calls) > 0
+    evidence_output = os.environ.get("HNH_AT030_EVIDENCE_OUTPUT")
+    if evidence_output:
+        actions = controller.list_actions(CONTEXT, run_id)
+        evidence = {
+            "schema_version": 1,
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "implementation_revision": os.environ.get(
+                "HNH_EVAL_IMPLEMENTATION_REVISION", "unrecorded"
+            ),
+            "test": "AT-030",
+            "provider": "deepseek-responses",
+            "model": model,
+            "reasoning_effort": os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "none"),
+            "run_status": result.status.value,
+            "artifact": {
+                "media_type": media_type,
+                "sha256": sha256(content).hexdigest(),
+                "size_bytes": len(content),
+            },
+            "action_capabilities": [action.capability_id for action in actions],
+            "model_calls": len(calls),
+            "usage": {
+                key: sum(int(call.usage.get(key, 0)) for call in calls)
+                for key in ("input_tokens", "output_tokens", "total_tokens")
+            },
+            "provider_request_hashes": [
+                sha256(call.provider_request_id.encode()).hexdigest()
+                for call in calls
+                if call.provider_request_id
+            ],
+        }
+        Path(evidence_output).write_text(
+            json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )

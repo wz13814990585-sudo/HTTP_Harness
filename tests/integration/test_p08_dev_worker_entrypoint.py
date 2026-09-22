@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
+from hnh.adapters.decision.typesafe import TypeSafeDecisionProvider
 from hnh.adapters.models.scripted import ScriptedProvider
 from hnh.adapters.postgres.models import ArtifactRecord
 from hnh.application.run_controller import RunController
@@ -90,6 +91,31 @@ def test_dev_worker_advances_api_admitted_run_with_same_configured_principal(
 def test_dev_worker_refuses_missing_configuration() -> None:
     with pytest.raises(ValueError, match=r"HNH_DATABASE_URL.*HNH_DEV_TOKEN.*HNH_DEEPSEEK_API_KEY"):
         build_development_worker(Settings(database_url=None, development_token=None))
+
+
+@pytest.mark.postgres
+def test_dev_worker_wires_enabled_typesafe_as_optional_decision_provider(
+    clean_postgres: Engine,
+) -> None:
+    settings = Settings(
+        database_url=clean_postgres.url.render_as_string(hide_password=False),
+        development_token="typesafe-wiring-token",
+        typesafe_enabled=True,
+        typesafe_api_key="test-only-typesafe-secret",
+        typesafe_timeout_seconds=3.0,
+        typesafe_min_confidence=0.85,
+    )
+    worker = build_development_worker(
+        settings,
+        engine=clean_postgres,
+        provider=ScriptedProvider([]),
+        worker_id="typesafe-wiring-worker",
+    )
+    assert worker.runner is not None
+    router = worker.runner.decision_router
+    assert isinstance(router.provider, TypeSafeDecisionProvider)
+    assert router.timeout_seconds == 3.0
+    assert router.min_confidence == 0.85
 
 
 @pytest.mark.postgres

@@ -141,6 +141,13 @@ class OpenAIResponsesProvider:
 
         return {}
 
+    def _text_format(self, name: str, schema: dict[str, Any]) -> dict[str, Any]:
+        return {"type": "json_schema", "name": name, "strict": True, "schema": schema}
+
+    def _input_contract(self, schema: dict[str, Any]) -> dict[str, Any]:
+        del schema
+        return {}
+
     def generate(
         self,
         context: ContextSnapshot,
@@ -152,6 +159,12 @@ class OpenAIResponsesProvider:
         task_context = {
             key: value for key, value in context.content.items() if key != "capabilities"
         }
+        model_input = {
+            "context": task_context,
+            "source_refs": context.source_refs,
+            "capabilities": tools,
+        }
+        model_input.update(self._input_contract(MODEL_TURN_SCHEMA))
         body = {
             "model": self._model,
             "instructions": (
@@ -159,23 +172,8 @@ class OpenAIResponsesProvider:
                 "/v1 operations from the authorized capability catalog. Never claim completion "
                 "without artifact and evidence identifiers from committed observations."
             ),
-            "input": json.dumps(
-                {
-                    "context": task_context,
-                    "source_refs": context.source_refs,
-                    "capabilities": tools,
-                },
-                ensure_ascii=False,
-                sort_keys=True,
-            ),
-            "text": {
-                "format": {
-                    "type": "json_schema",
-                    "name": "hnh_model_turn",
-                    "strict": True,
-                    "schema": MODEL_TURN_SCHEMA,
-                }
-            },
+            "input": json.dumps(model_input, ensure_ascii=False, sort_keys=True),
+            "text": {"format": self._text_format("hnh_model_turn", MODEL_TURN_SCHEMA)},
             "max_output_tokens": limits.max_output_tokens,
             "store": False,
             "stream": False,
@@ -198,7 +196,14 @@ class OpenAIResponsesProvider:
                 f"{self._provider_display_name} response was not a response object"
             )
         if payload.get("status") != "completed":
-            raise ModelOutputInvalid(f"{self._provider_display_name} response did not complete")
+            incomplete = payload.get("incomplete_details")
+            reason = incomplete.get("reason") if isinstance(incomplete, dict) else "unknown"
+            usage = payload.get("usage")
+            output_tokens = usage.get("output_tokens") if isinstance(usage, dict) else None
+            raise ModelOutputInvalid(
+                f"{self._provider_display_name} response did not complete "
+                f"(reason={reason}, output_tokens={output_tokens})"
+            )
         text = self._output_text(payload)
         try:
             output = json.loads(text)
@@ -267,6 +272,8 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
         native_context = {
             key: value for key, value in context.content.items() if key != "capabilities"
         }
+        model_input = {"context": native_context, "source_refs": context.source_refs}
+        model_input.update(self._input_contract(FUNCTION_TEXT_SCHEMA))
         body = {
             "model": self._model,
             "instructions": (
@@ -275,11 +282,7 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
                 "with exactly one final_candidate or request_input. "
                 "Do not claim completion without committed artifact and evidence identifiers."
             ),
-            "input": json.dumps(
-                {"context": native_context, "source_refs": context.source_refs},
-                ensure_ascii=False,
-                sort_keys=True,
-            ),
+            "input": json.dumps(model_input, ensure_ascii=False, sort_keys=True),
             "tools": catalog.tools,
             "tool_choice": "auto",
             # Match the HTTP-semantic arm's ability to propose several
@@ -287,12 +290,7 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
             # still applies policy and budget to each admitted action.
             "parallel_tool_calls": True,
             "text": {
-                "format": {
-                    "type": "json_schema",
-                    "name": "hnh_function_text_decision",
-                    "strict": True,
-                    "schema": FUNCTION_TEXT_SCHEMA,
-                }
+                "format": self._text_format("hnh_function_text_decision", FUNCTION_TEXT_SCHEMA)
             },
             "max_output_tokens": limits.max_output_tokens,
             "store": False,
@@ -316,7 +314,14 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
                 f"{self._provider_display_name} response was not a completed response object"
             )
         if payload.get("status") != "completed":
-            raise ModelOutputInvalid(f"{self._provider_display_name} response did not complete")
+            incomplete = payload.get("incomplete_details")
+            reason = incomplete.get("reason") if isinstance(incomplete, dict) else "unknown"
+            usage = payload.get("usage")
+            output_tokens = usage.get("output_tokens") if isinstance(usage, dict) else None
+            raise ModelOutputInvalid(
+                f"{self._provider_display_name} response did not complete "
+                f"(reason={reason}, output_tokens={output_tokens})"
+            )
         calls = [
             item
             for item in payload["output"]

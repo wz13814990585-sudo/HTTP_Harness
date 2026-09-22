@@ -45,7 +45,7 @@ def test_live_task_config_requires_explicit_credentials_and_fresh_raw_path(
     assert config.output == tmp_path / "raw.jsonl"
     assert config.implementation_revision == "git:0123456789abcdef"
     assert config.model == "deepseek-flash"
-    assert config.reasoning_effort == "high"
+    assert config.reasoning_effort == "none"
     config.output.touch()
     with pytest.raises(FileExistsError):
         LiveTaskConfig.from_environment()

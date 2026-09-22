@@ -20,6 +20,7 @@ def test_at_067_missing_dependencies_are_explicit_and_no_mock_readiness() -> Non
     assert response.json()["components"] == {
         "database": "unavailable",
         "model_configuration": "missing",
+        "typesafe_classifier": "disabled",
         "isolated_broker_configuration": "missing",
         "blob_store_configuration": "missing",
         "mcp_integrations": "disabled",

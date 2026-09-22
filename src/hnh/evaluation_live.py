@@ -545,7 +545,7 @@ class LiveEchoConfig:
         if re.fullmatch(r"[A-Za-z0-9._:/@+-]{1,200}", revision) is None:
             raise ValueError("HNH_EVAL_IMPLEMENTATION_REVISION has an invalid format")
         model = os.environ.get("HNH_DEEPSEEK_MODEL", "deepseek-flash")
-        reasoning_effort = os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "high")
+        reasoning_effort = os.environ.get("HNH_DEEPSEEK_REASONING_EFFORT", "none")
         validate_deepseek_configuration(model, reasoning_effort)
         return cls(
             database_url=values["HNH_DATABASE_URL"],

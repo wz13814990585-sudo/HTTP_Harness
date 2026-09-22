@@ -35,8 +35,16 @@ To opt into a separate local worker, configure the **same** database,
 `HNH_DEV_TOKEN`, `HNH_DEV_TENANT`, and `HNH_DEV_SUBJECT` as the API process.
 Provide `HNH_DEEPSEEK_API_KEY` through the local secret environment, not a
 checked-in file. `HNH_DEEPSEEK_MODEL` defaults to `deepseek-flash` and
-`HNH_DEEPSEEK_REASONING_EFFORT` defaults to `high`; the other supported model
+`HNH_DEEPSEEK_REASONING_EFFORT` defaults to `none` for bounded tool loops; the other supported model
 is `deepseek-v4-pro`, and valid efforts are `none`, `low`, `high`, and `max`.
+Higher reasoning effort must be evaluated with a larger per-turn and total token
+budget because DeepSeek counts reasoning tokens inside `max_output_tokens`.
+
+The optional TypeSafe strategy classifier is disabled by default. To enable it
+only in the worker, set `HNH_TYPESAFE_ENABLED=1`, `TYPESAFE_API_KEY`,
+`HNH_TYPESAFE_MODEL=jev-latest`, and the trusted System One endpoint. Its result
+is only a `simple`/`plan_hint` suggestion; timeout, low confidence, malformed
+output, or service failure falls back to `simple` and never grants authority.
 In a second terminal:
 
 ```bash

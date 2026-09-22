@@ -45,7 +45,7 @@ class Runner:
         *,
         max_format_repairs: int = 2,
         max_no_progress: int = 2,
-        default_max_output_tokens: int = 1024,
+        default_max_output_tokens: int = 4096,
         decision_router: DecisionRouter | None = None,
     ) -> None:
         self.controller = controller

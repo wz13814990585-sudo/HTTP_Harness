@@ -121,7 +121,10 @@ class DecisionRouter:
             or not 0 <= suggestion.confidence <= 1
         ):
             return False
-        if not math.isclose(values[suggestion.label], suggestion.confidence, abs_tol=0.01):
+        # TypeSafe confidence is derived from the shape of the whole probability
+        # distribution; it is not the selected label's probability. The selected
+        # label must still be a maximum-probability choice.
+        if not math.isclose(values[suggestion.label], max(values.values()), abs_tol=0.01):
             return False
         return (
             isinstance(suggestion.provider, str)

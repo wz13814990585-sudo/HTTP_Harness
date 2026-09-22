@@ -311,6 +311,9 @@ def create_app(
             "components": {
                 "database": "ready" if database_healthy else "unavailable",
                 "model_configuration": "configured" if configured_model else "missing",
+                "typesafe_classifier": (
+                    "configured" if resolved_settings.typesafe_enabled else "disabled"
+                ),
                 "isolated_broker_configuration": "configured" if configured_broker else "missing",
                 "blob_store_configuration": "configured" if resolved_blob_store else "missing",
                 "mcp_integrations": "configured" if mcp_integrations else "disabled",
