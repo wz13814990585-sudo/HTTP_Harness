@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -24,6 +25,24 @@ from hnh.domain.states import TERMINAL_RUN_STATUSES, RunStatus
 from hnh.ports.models import ModelLimits, ModelProvider, ModelTurn
 
 FaultHook = Callable[[], None]
+
+
+def _safe_validation_detail(exc: ValidationError) -> str:
+    """Describe repairable schema errors without copying model-controlled values."""
+    issues = [
+        {
+            "type": error["type"],
+            "loc": [str(item) for item in error["loc"]],
+            "message": error["msg"],
+        }
+        for error in exc.errors(include_url=False, include_context=False, include_input=False)[:8]
+    ]
+    return json.dumps(
+        {"kind": "model_turn_schema_validation", "issues": issues},
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -226,7 +245,13 @@ class Runner:
         try:
             turn = ModelTurn.model_validate(call.parsed_output)
         except ValidationError as exc:
-            return self._reject_model_output(context, call, str(exc), claimed_job, worker_id)
+            return self._reject_model_output(
+                context,
+                call,
+                _safe_validation_detail(exc),
+                claimed_job,
+                worker_id,
+            )
         if (
             call.response_hash is not None
             and self.controller.count_model_calls(

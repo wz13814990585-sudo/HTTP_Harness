@@ -226,7 +226,14 @@ def test_at_022_complete_model_output_is_committed_before_action_dispatch(
 
 @pytest.mark.postgres
 def test_at_023_invalid_model_output_repair_is_bounded(clean_postgres: Engine) -> None:
-    provider = ScriptedProvider([{"invalid": 1}, {"invalid": 1}, {"invalid": 1}])
+    sensitive_model_value = "do-not-copy-model-value-into-event"
+    provider = ScriptedProvider(
+        [
+            {"invalid": sensitive_model_value},
+            {"invalid": sensitive_model_value},
+            {"invalid": sensitive_model_value},
+        ]
+    )
     runner, controller, _gateway, _resources = build_runner(
         clean_postgres, provider, max_format_repairs=2
     )
@@ -240,6 +247,38 @@ def test_at_023_invalid_model_output_repair_is_bounded(clean_postgres: Engine) -
     assert provider.calls == 2
     assert count(clean_postgres, ModelCallRecord, run_id=run_id) == 2
     assert count(clean_postgres, ModelCallAttemptRecord) == 2
+    with Session(clean_postgres) as session:
+        details = [
+            event.data["detail"]
+            for event in session.scalars(
+                select(EventRecord)
+                .where(
+                    EventRecord.run_id == run_id,
+                    EventRecord.event_type == "model.output_invalid",
+                )
+                .order_by(EventRecord.seq)
+            )
+        ]
+        contexts = session.scalars(
+            select(ContextSnapshotRecord)
+            .where(ContextSnapshotRecord.run_id == run_id)
+            .order_by(ContextSnapshotRecord.turn_id)
+        ).all()
+    assert len(details) == 2
+    assert all(sensitive_model_value not in detail for detail in details)
+    assert json.loads(details[0]) == {
+        "issues": [
+            {
+                "loc": ["invalid"],
+                "message": "Extra inputs are not permitted",
+                "type": "extra_forbidden",
+            }
+        ],
+        "kind": "model_turn_schema_validation",
+    }
+    assert len(contexts) == 2
+    assert sensitive_model_value not in json.dumps(contexts[1].content)
+    assert "model_turn_schema_validation" in json.dumps(contexts[1].content)
     budget = controller.budget_status(CONTEXT, run_id)
     assert budget["used"]["model_turn"] == 2
     assert budget["used"]["output_tokens"] == 2
