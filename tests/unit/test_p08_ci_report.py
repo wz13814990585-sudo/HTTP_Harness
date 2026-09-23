@@ -58,9 +58,7 @@ def _inputs(tmp_path: Path) -> tuple[Path, Path]:
                         "id": "AT-pass",
                         "status": "passed",
                         "tests": ["tests/integration/test_example.py::test_passed"],
-                        "live_tests": [
-                            "tests/integration/test_example.py::test_optional_live"
-                        ],
+                        "live_tests": ["tests/integration/test_example.py::test_optional_live"],
                     },
                     {
                         "id": "AT-blocked",
@@ -127,17 +125,13 @@ def test_ci_report_rejects_unexpected_skip_and_stale_summary(tmp_path: Path) -> 
 def test_ci_report_rejects_missing_or_failed_optional_live_test(tmp_path: Path) -> None:
     junit, acceptance = _inputs(tmp_path)
     source = json.loads(acceptance.read_text())
-    source["cases"][0]["live_tests"] = [
-        "tests/integration/test_example.py::test_not_collected"
-    ]
+    source["cases"][0]["live_tests"] = ["tests/integration/test_example.py::test_not_collected"]
     acceptance.write_text(json.dumps(source))
     result = check_report(junit, acceptance)
     assert result["evidence_consistent"] is False
     assert any("live_test_not_collected" in item for item in result["issues"])
 
-    source["cases"][0]["live_tests"] = [
-        "tests/integration/test_example.py::test_optional_live"
-    ]
+    source["cases"][0]["live_tests"] = ["tests/integration/test_example.py::test_optional_live"]
     acceptance.write_text(json.dumps(source))
     tree = ElementTree.parse(junit)
     live = tree.getroot().find("testcase[@name='test_optional_live']")
