@@ -1,0 +1,7 @@
+date,region,product,units,unit_price
+2026-08-01,North,Widget A,10,120.00
+2026-08-03,North,Widget B,5,200.00
+2026-08-07,South,Widget A,8,120.00
+2026-08-11,South,Widget C,7,150.00
+2026-08-16,East,Widget B,6,200.00
+2026-08-22,East,Widget C,4,150.00

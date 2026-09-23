@@ -31,6 +31,8 @@ Authoritative current artifacts:
 | Living implementation history | `PLANS.md` |
 | P08 implementation evidence | `reports/implementation/P08.md` |
 | Live evaluation interpretation | `reports/evaluation/P08.md` |
+| Interactive sales recovery demo | `docs/SALES_DEMO.md` |
+| Sales demo execution evidence | `reports/evidence/sales_demo_20260923.json` |
 | Static design validation | `reports/design_validation.json` |
 | Runtime API contract | `contracts/openapi.yaml` |
 | Exact acceptance specification | `eval/acceptance_cases.yaml` |

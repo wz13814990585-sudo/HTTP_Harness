@@ -1,0 +1,28 @@
+{
+  "evidence_tier": "controlled_local_fault_demo",
+  "executed_at": "2026-09-23",
+  "command": "uv run python scripts/run_sales_demo.py --auto-approve",
+  "verified": true,
+  "run_status": "succeeded",
+  "csv_rows": 6,
+  "total_units": 40,
+  "total_revenue": "6010.00",
+  "report_media_type": "text/markdown",
+  "report_sha256": "91da9b4a2e6273a595d1fb509ba021ada86a40d958b829fba4cace3def509c2c",
+  "approval_status": "answered",
+  "status_after_response_loss": "blocked",
+  "action_status_after_response_loss": "outcome_unknown",
+  "reconciliation": "confirmed_applied",
+  "publish_requests": 1,
+  "publication_count": 1,
+  "replay_without_redispatch": true,
+  "event_count": 23,
+  "postgres_image": "postgres:14.18@sha256:90da0743e4ed7939b08e2945e0451401b4d7abd792530c7d3cc2da82ed534f08",
+  "sandbox_image": "python@sha256:1dd3dca85e22886e44fcad1bb7ccab6691dfa83db52214cf9e20696e095f3e36",
+  "limitations": [
+    "The operator approval was supplied by the explicit --auto-approve test flag.",
+    "The publisher was an independent localhost HTTP thread with an in-memory ledger.",
+    "No live model, hosted MCP service, OAuth issuer, or production identity provider was used.",
+    "One observed publication in this controlled workflow is not a general exactly-once guarantee."
+  ]
+}

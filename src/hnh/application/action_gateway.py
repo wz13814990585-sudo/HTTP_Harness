@@ -505,6 +505,13 @@ class ActionGateway:
             if not isinstance(value, dict):
                 raise SchemaInvalid("MCP capabilities require a JSON object payload")
             return dict(value)
+        if value is not None:
+            if not isinstance(value, dict):
+                raise SchemaInvalid("integration capabilities require a JSON object payload")
+            overlap = set(path_parameters).intersection(value)
+            if overlap:
+                raise SchemaInvalid("path parameters cannot be repeated in the request payload")
+            return {**path_parameters, **value}
         return dict(path_parameters)
 
     @staticmethod
@@ -515,6 +522,19 @@ class ActionGateway:
     def _from_snapshot(action: ActionSnapshot, replayed: bool) -> ExecutionResult:
         if action.result is None:
             raise RuntimeError("terminal action is missing its result")
+        # A normally completed adapter stores the transport envelope.  A
+        # reconciled unknown effect instead stores the operator/downstream
+        # evidence directly.  Both are committed terminal results and must be
+        # replayable without dispatching the external effect again.
+        if "status_code" not in action.result or "value" not in action.result:
+            return ExecutionResult(
+                action.id,
+                action.request_hash,
+                200,
+                dict(action.result),
+                replayed,
+                action.status == ActionStatus.SUCCEEDED,
+            )
         return ExecutionResult(
             action.id,
             action.request_hash,

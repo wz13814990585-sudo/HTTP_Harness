@@ -82,6 +82,17 @@ remote writes remain fail-closed until their effects can be fenced/reconciled.
 Unresolved external effects still require adapter-specific stop/reconciliation;
 the cancellation worker does not prove remote cancellation.
 
+The requested post-P08 portfolio follow-up now also includes a deterministic
+sales-report reliability demo. It generates and reads a managed CSV, calculates
+the report in the digest-pinned Docker Python broker, imports a Markdown
+Artifact, persists an exact-action approval, and publishes to an independent
+local HTTP ledger that deliberately drops its first response after commit. The
+unsafe Action becomes `outcome_unknown` and the Run becomes `blocked`; a query
+then reconciles the single remote effect. Replaying the same admitted Action
+returns committed reconciliation evidence without another POST. This is a
+local controlled business demonstration, not a new P09/P10 stage or AT-065
+remote evidence.
+
 ## Required per-stage plan format
 Purpose and observable behavior; current repository facts; dependencies; exact files to change; implementation steps; commands and expected results; real results; AT coverage; decisions and deviations; environmental blockers; safe next action. Keep each active plan self-contained enough to resume after context loss.
 
@@ -836,6 +847,22 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   branch-aware coverage. The 68-ID gate mapped 225 executed tests with no issue;
   strict release mode still exited 2 only for AT-065. Ruff/format/mypy, lock,
   runtime contract and 105/105 design checks passed.
+
+- 2026-09-23: Added the interactive sales-report demonstration requested after
+  P08. The checked-in six-row CSV totals 40 units and $6,010.00; a real
+  digest-pinned, no-network Docker Python session generated the exact expected
+  Markdown Artifact. The Run persisted `waiting_input` until approval. A local
+  HTTP publication ledger committed once and closed the connection before its
+  response; the Action became `outcome_unknown`, the Run became `blocked`, and
+  downstream lookup reconciled it as `confirmed_applied`. Replaying the same
+  operation produced no second POST: one request and one publication remained.
+  The targeted unit suite passed 3/3 and the real PostgreSQL/Docker integration
+  passed 1/1; the standalone `--auto-approve` command also completed with 23
+  committed events and removed its temporary database and sandbox containers.
+  The final full regression collected 296 tests: 294 passed and the two declared
+  live reruns skipped; coverage remained 84%. The 68-ID gate mapped 225 executed
+  tests with no issue and still reports only AT-065 blocked. This demo does not
+  call a live model and does not change the 67/68 acceptance status.
 
 ## Environment constraints
 

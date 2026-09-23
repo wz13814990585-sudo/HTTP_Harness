@@ -82,6 +82,25 @@ uv run python scripts/run_portfolio_demo.py
 [`docs/PORTFOLIO_DEMO.md`](docs/PORTFOLIO_DEMO.md)。已有运行中的本地服务也可直接运行
 `uv run hnh-demo`。
 
+## 销售报告与故障恢复演示
+
+另有一条不依赖模型 API 的可交互业务演示：生成并读取销售 CSV，在固定 digest、
+禁网的 Python 沙箱中计算汇总并创建 Markdown Artifact，等待操作者批准发布，随后
+让独立本地 HTTP 发布服务在提交效果后故意丢失响应。Harness 会把 Action 保留为
+`outcome_unknown`、阻塞 Run、查询下游账本完成对账，并验证同一 Action 的再次调用
+不会产生第二次发布。
+
+```bash
+uv sync --locked --all-extras --dev
+uv run python scripts/run_sales_demo.py
+```
+
+在提示处输入 `approve` 才会发布；自动化验证可显式增加 `--auto-approve`。成功输出
+必须同时显示 `verified=true`、`publish_requests=1`、`publication_count=1` 和
+`replay_without_redispatch=true`。样例数据、逐步说明和边界见
+[`docs/SALES_DEMO.md`](docs/SALES_DEMO.md)。这是本地受控故障演练，不是独立远端
+生产服务或 AT-065 证据。
+
 ## 当前可运行切片
 
 需要 Python 3.12、uv 和 PostgreSQL。开发服务默认只监听由启动命令指定的地址；
