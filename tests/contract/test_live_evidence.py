@@ -98,6 +98,22 @@ def test_at_068_recorded_live_task_and_skills_evidence_retains_all_outcomes() ->
     }
     assert [row["failure_reason"] for row in task_rows].count("model_output_invalid") == 2
 
+    repair_rows = _load_jsonl("live_tasks_deepseek_20260923_repair1.raw.jsonl")
+    repair_summary = summarize(repair_rows)
+    assert repair_summary["design_complete"] is True
+    assert repair_summary["design_kind"] == "task_suite"
+    assert repair_summary["evidence_tier"] == "live_provider"
+    assert repair_summary["denominator"] == 3
+    assert repair_summary["evidence_based_completion_count"] == 1
+    assert repair_summary["failed_count"] == 1
+    assert repair_summary["false_completion_count"] == 1
+    assert repair_summary["provider_usage_sample_count"] == 3
+    assert repair_summary["provider_input_tokens"] == 26430
+    assert repair_summary["provider_output_tokens"] == 1932
+    assert [row["failure_reason"] for row in repair_rows].count("model_output_invalid") == 1
+    assert sum(row["claimed_complete"] is True for row in repair_rows) == 2
+    assert sum(row["verified_completion"] is True for row in repair_rows) == 1
+
     skill_rows = _load_jsonl("live_skills_deepseek_20260923.raw.jsonl")
     skill_summary = summarize(skill_rows)
     assert skill_summary["design_complete"] is True
@@ -116,7 +132,7 @@ def test_at_068_recorded_live_task_and_skills_evidence_retains_all_outcomes() ->
     assert off["provider_input_tokens"] == 12251
     assert on["provider_input_tokens"] == 14408
 
-    all_rows = task_rows + skill_rows
+    all_rows = task_rows + repair_rows + skill_rows
     assert {row["model_revision"] for row in all_rows} == {"deepseek-flash"}
     assert all(row["model_usage_source"] == "provider_reported" for row in all_rows)
     assert all(row["environment_hash"] != "0" * 64 for row in all_rows)

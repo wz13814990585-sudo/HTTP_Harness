@@ -807,6 +807,10 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   The post-evidence full PostgreSQL/Docker regression passed 287 tests with
   two declared live rerun skips. The CI evidence gate reported 225 mapped
   executed testcases, no issues, and only AT-065 blocked in strict mode.
+  Remote CI run `35812541502` passed both jobs in 2m27s. A follow-up task
+  campaign after safe model-validation diagnostic hardening again measured
+  1/3 verified completion and retained one independent-oracle false completion;
+  the change improves secret hygiene and repair feedback, not measured quality.
 
 ## Environment constraints
 
