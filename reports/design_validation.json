@@ -1,6 +1,6 @@
 {
   "report_type": "design_package_static_validation",
-  "created_at_utc": "2026-09-23T03:43:48.011086+00:00",
+  "created_at_utc": "2026-09-23T03:56:27.180886+00:00",
   "scope": "JSON/YAML parsing, JSON Schema meta-validation, positive/negative examples, local refs, basic OpenAPI shape, state machines, planned stages and document consistency only.",
   "not_performed": [
     "Harness implementation tests",

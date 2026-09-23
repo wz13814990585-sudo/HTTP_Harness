@@ -79,6 +79,30 @@ def test_recorded_typesafe_evidence_is_sanitized_and_within_router_contract() ->
     assert "api_key" not in json.dumps(evidence).lower()
 
 
+def test_recorded_portfolio_demo_is_sanitized_and_evidence_verified() -> None:
+    evidence = _load("portfolio_demo_deepseek_20260923.json")
+
+    assert evidence["schema_version"] == 1
+    assert evidence["evidence_type"] == "local_portfolio_demo"
+    assert evidence["implementation_revision"] == "git:c169b80"
+    assert evidence["provider"] == "deepseek-responses"
+    assert evidence["model"] == "deepseek-flash"
+    assert evidence["run_status"] == "succeeded"
+    assert evidence["observed_statuses"] == ["queued", "running", "succeeded"]
+    assert evidence["action_count"] == 2
+    assert evidence["verified"] is True
+    assert evidence["credential_recorded"] is False
+    artifact = evidence["artifact"]
+    assert isinstance(artifact, dict)
+    assert artifact["sha256"] == artifact["expected_sha256"]
+    assert artifact["media_type"] == "text/plain"
+    serialized = json.dumps(evidence).lower()
+    assert all(
+        marker not in serialized
+        for marker in ("api_key", "authorization", "bearer ", "client_secret", "password")
+    )
+
+
 def test_at_068_recorded_live_task_and_skills_evidence_retains_all_outcomes() -> None:
     task_rows = _load_jsonl("live_tasks_deepseek_20260923.raw.jsonl")
     task_summary = summarize(task_rows)
@@ -114,6 +138,20 @@ def test_at_068_recorded_live_task_and_skills_evidence_retains_all_outcomes() ->
     assert sum(row["claimed_complete"] is True for row in repair_rows) == 2
     assert sum(row["verified_completion"] is True for row in repair_rows) == 1
 
+    guided_rows = _load_jsonl("live_tasks_deepseek_20260923_decision_contract.raw.jsonl")
+    guided_summary = summarize(guided_rows)
+    assert guided_summary["design_complete"] is True
+    assert guided_summary["design_kind"] == "task_suite"
+    assert guided_summary["evidence_tier"] == "live_provider"
+    assert guided_summary["denominator"] == 3
+    assert guided_summary["evidence_based_completion_count"] == 3
+    assert guided_summary["failed_count"] == 0
+    assert guided_summary["false_completion_count"] == 0
+    assert guided_summary["provider_usage_sample_count"] == 3
+    assert guided_summary["provider_input_tokens"] == 22570
+    assert guided_summary["provider_output_tokens"] == 1729
+    assert all(row["verified_completion"] is True for row in guided_rows)
+
     skill_rows = _load_jsonl("live_skills_deepseek_20260923.raw.jsonl")
     skill_summary = summarize(skill_rows)
     assert skill_summary["design_complete"] is True
@@ -132,7 +170,7 @@ def test_at_068_recorded_live_task_and_skills_evidence_retains_all_outcomes() ->
     assert off["provider_input_tokens"] == 12251
     assert on["provider_input_tokens"] == 14408
 
-    all_rows = task_rows + repair_rows + skill_rows
+    all_rows = task_rows + repair_rows + guided_rows + skill_rows
     assert {row["model_revision"] for row in all_rows} == {"deepseek-flash"}
     assert all(row["model_usage_source"] == "provider_reported" for row in all_rows)
     assert all(row["environment_hash"] != "0" * 64 for row in all_rows)

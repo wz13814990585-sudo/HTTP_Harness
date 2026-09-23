@@ -31,7 +31,7 @@ Immutable Artifact store   Restricted execution broker
 |---|---|---|
 | P00–P07 | 全部阶段验收通过 | 不代表生产多租户安全 |
 | AT-030 真实模型闭环 | DeepSeek + PostgreSQL 两次通过 | 不是大规模模型质量评估 |
-| AT-068 真实任务/skills | 三任务集 1/3；skills off/on 均 4/4 | 小样本，不宣称 skills 收益 |
+| AT-068 真实任务/skills | 前两次三任务集均 1/3；决策约束改进后一次 3/3；skills off/on 均 4/4 | 小样本，不宣称稳定质量或 skills 收益 |
 | GitHub Actions | 质量、迁移、PostgreSQL/Docker、安全/chaos、Compose smoke 通过 | 使用占位模型，不是 live 运行 |
 | AT-065 | `blocked_environment` | 缺独立 HTTPS MCP/OAuth 服务；不以 localhost 冒充 |
 
@@ -52,9 +52,10 @@ P07 的分类提示、按需 skills 与有界子 Run 已通过本地测试。P08
 `reports/implementation/` 和 `reports/acceptance_status.json` 为真实状态依据。
 
 P08 另有 `eval/run_live_tasks.py`：三个固定的“读受管文件→转换→创建
-不可变 Artifact”任务，使用实际产物字节和已提交 Action 评分。该入口
-已生成一组真实 DeepSeek 原始记录：1/3 有证据完成，另外两项失败仍计入
-分母；这不是公开基准或生产部署证明。
+不可变 Artifact”任务，使用实际产物字节和已提交 Action 评分。前两次真实
+DeepSeek 小样本均为 1/3；在显式强调单一决策和依赖操作分轮后，第三次为 3/3。
+所有原始成功、失败和错误完成记录都保留。这是改进信号，不是公开基准、统计结论
+或生产部署证明。
 
 另有 `eval/run_live_skills.py`：在相同只读 echo 任务、模型界面、权限和
 预算下独立比较 skill 关闭/开启。两组均经过持久化内核与 ActionGateway；

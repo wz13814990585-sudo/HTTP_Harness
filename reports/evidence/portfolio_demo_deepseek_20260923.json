@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_type": "local_portfolio_demo",
+  "date": "2026-09-23",
+  "implementation_revision": "git:c169b80",
+  "provider": "deepseek-responses",
+  "model": "deepseek-flash",
+  "reasoning_effort": "none",
+  "topology": "disposable-local-compose-api-postgresql-worker",
+  "api_boundary": "public-http-only",
+  "run_status": "succeeded",
+  "observed_statuses": [
+    "queued",
+    "running",
+    "succeeded"
+  ],
+  "action_count": 2,
+  "event_count": 19,
+  "artifact": {
+    "media_type": "text/plain",
+    "sha256": "2d58d9e80782ad9fad3f8fcdc3cbdc7ded9245934556d97a3854d10cb5960e3e",
+    "expected_sha256": "2d58d9e80782ad9fad3f8fcdc3cbdc7ded9245934556d97a3854d10cb5960e3e",
+    "size_bytes": 11
+  },
+  "verified": true,
+  "cleanup": "unique compose containers, network and disposable volumes removed",
+  "credential_recorded": false,
+  "limitations": [
+    "single local demonstration, not a benchmark",
+    "development token identity, not production OIDC",
+    "no independent HTTPS/OAuth MCP service",
+    "does not establish production readiness"
+  ]
+}

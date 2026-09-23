@@ -10,9 +10,12 @@ request-scoped trusted integration composition, and issuer-pinned OAuth
 client-credentials fixtures; independent remote and managed-secret evidence
 remain outside its local compatibility claim.
 P08 has local evaluation/operations slices and checked-in live DeepSeek task
-and skills-ablation datasets. The three-task campaign retained one verified
-completion and two failures; the skills off/on campaign retained eight verified
-echo completions. The independent HTTPS/OAuth MCP four-arm result,
+and skills-ablation datasets. Two earlier three-task campaigns each retained
+one verified completion; after adding explicit single-decision and
+dependency-ordering guidance, a third exact-revision campaign retained three
+verified completions. The skills off/on campaign retained eight verified echo
+completions. These are small samples, not a stable quality or benefit claim.
+The independent HTTPS/OAuth MCP four-arm result,
 production worker/deployment integration, and release gate remain incomplete.
 An opt-in single-principal development worker process now exercises
 API→PostgreSQL→worker with a controlled model fixture, but this is not
@@ -51,10 +54,11 @@ environment now has working DeepSeek and TypeSafe credentials, but no independen
 MCP/OAuth endpoint. DeepSeek is the configured live provider; TypeSafe is an
 explicit optional P07 adapter and is enabled only in local worker configuration.
 The opt-in live echo entrypoint has four fixed input variants of one read-only
-capability. AT-068 now has a real DeepSeek three-task read/transform/artifact
-dataset and an independent real skills off/on dataset. The task suite measured
-1/3 verified completion and retained two failures; the skills campaign measured
-8/8 verified echo completion but no demonstrated benefit. AT-065 remains open.
+capability. AT-068 now has three real DeepSeek three-task read/transform/artifact
+datasets and an independent real skills off/on dataset. The first two task
+campaigns measured 1/3; the post-guidance campaign measured 3/3. The skills
+campaign measured 8/8 verified echo completion but no demonstrated benefit.
+AT-065 remains open.
 The local P07 integration tests and P08 backup/readiness tests pass, but scripted
 providers and controlled executors are not live evidence. Keep `reports/implementation`
 and `reports/acceptance_status.json` synchronized with each completed gate.
@@ -811,6 +815,27 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   campaign after safe model-validation diagnostic hardening again measured
   1/3 verified completion and retained one independent-oracle false completion;
   the change improves secret hygiene and repair feedback, not measured quality.
+
+- 2026-09-23: Added a recording-friendly portfolio path without weakening the
+  kernel. `hnh-demo` uses only the public HTTP API; the managed wrapper starts a
+  uniquely named disposable Compose stack, generates non-printed local secrets,
+  submits a durable Run, verifies the exact Artifact bytes plus committed Action
+  evidence, and removes only its own containers/network/volumes. A real
+  `deepseek-flash` run on source commit `c169b80` moved queued → running →
+  succeeded, committed two Actions and a text/plain Artifact whose SHA-256
+  matched the independent expected value. The same change makes the model-facing
+  decision contract explicitly require one decision kind and separate turns for
+  dependent operations. A new exact-revision three-task campaign then measured
+  3/3 evidence-based completions, zero false completion/failure/timeout/permission
+  violation/duplicate effect, 22,570 input and 1,729 output provider tokens.
+  Earlier 1/3 campaigns remain checked in; the new n=3 result is not evidence of
+  stable 100% quality. Unit/contract tests passed 140; targeted PostgreSQL
+  regression passed 21 with one expected live skip. The final full
+  PostgreSQL/Docker/security/chaos regression collected 292 tests: 290 passed,
+  two expected live rerun skips, one dependency deprecation warning and 84%
+  branch-aware coverage. The 68-ID gate mapped 225 executed tests with no issue;
+  strict release mode still exited 2 only for AT-065. Ruff/format/mypy, lock,
+  runtime contract and 105/105 design checks passed.
 
 ## Environment constraints
 
