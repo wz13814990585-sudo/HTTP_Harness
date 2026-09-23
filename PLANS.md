@@ -9,10 +9,11 @@ service integration. P06 has a tested local official-SDK/official-server adapter
 request-scoped trusted integration composition, and issuer-pinned OAuth
 client-credentials fixtures; independent remote and managed-secret evidence
 remain outside its local compatibility claim.
-P08 has local evaluation-recording and operations slices plus an opt-in
-real-model four-arm echo entrypoint. Its entrypoint passed a real-PostgreSQL,
-mock-model/local-MCP wiring test, not a live run. Live four-arm results,
-production worker/deployment integration, and release gates remain incomplete.
+P08 has local evaluation/operations slices and checked-in live DeepSeek task
+and skills-ablation datasets. The three-task campaign retained one verified
+completion and two failures; the skills off/on campaign retained eight verified
+echo completions. The independent HTTPS/OAuth MCP four-arm result,
+production worker/deployment integration, and release gate remain incomplete.
 An opt-in single-principal development worker process now exercises
 API→PostgreSQL→worker with a controlled model fixture, but this is not
 production identity or live-model evidence.
@@ -34,25 +35,26 @@ An independent HTTP-native harness with one durable state owner, controlled side
 | P05 | complete | `reports/implementation/P05.md`; AT-039–052 passed on PostgreSQL |
 | P06 | complete_local | `reports/implementation/P06.md`; AT-053–059 passed within the reported local interoperability/security scope |
 | P07 | complete | `reports/implementation/P07.md`; AT-060–064 passed; live TypeSafe contract verified without benefit claim |
-| P08 | blocked_environment | `reports/implementation/P08.md`; local machinery and AT-066/067 pass; AT-065/068 require live model/remote service evidence |
+| P08 | blocked_environment | `reports/implementation/P08.md`; AT-066–068 pass; AT-065 still requires an independent HTTPS/OAuth MCP service |
 
 ## Current task
 
 P08 local implementation and repeatable evidence machinery are complete within
-the available environment. Its stage exit is blocked on AT-065/068 live evidence;
+the available environment. Its stage exit is blocked on AT-065 live evidence;
 do not invent it. P06's local OAuth
 issuer guard now passes, but a managed credential backend, refresh drill and
 independent remote interoperability remain future production-hardening work.
 P08 still needs a production-configured model worker,
-four live comparable model/downstream arms, raw live task runs, deployment and CI
+four live comparable model/downstream arms, deployment and CI
 exercise, and complete observability/operational gates. The local ignored
 environment now has working DeepSeek and TypeSafe credentials, but no independent
 MCP/OAuth endpoint. DeepSeek is the configured live provider; TypeSafe is an
 explicit optional P07 adapter and is enabled only in local worker configuration.
 The opt-in live echo entrypoint has four fixed input variants of one read-only
-capability. A separate three-task read/transform/artifact suite is now
-implemented for AT-068 and has so far passed only with a mocked model. AT-030 is
-real-model evidence but is not a task-suite dataset; AT-065/068 remain open.
+capability. AT-068 now has a real DeepSeek three-task read/transform/artifact
+dataset and an independent real skills off/on dataset. The task suite measured
+1/3 verified completion and retained two failures; the skills campaign measured
+8/8 verified echo completion but no demonstrated benefit. AT-065 remains open.
 The local P07 integration tests and P08 backup/readiness tests pass, but scripted
 providers and controlled executors are not live evidence. Keep `reports/implementation`
 and `reports/acceptance_status.json` synchronized with each completed gate.
@@ -794,6 +796,18 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
   default `reasoning.effort=none`, AT-030 passed twice using the final local
   configuration; earlier high/low incomplete/invalid attempts are not counted.
 
+- 2026-09-23: Ran the P08 task suite and skills ablation against real
+  `deepseek-flash` on dedicated temporary PostgreSQL databases. The immutable
+  task JSONL is design-complete and retains all three outcomes: one verified
+  completion and two `model_output_invalid` failures, with 22,590 input and
+  1,341 output provider tokens. The skills off/on JSONL is design-complete:
+  both conditions completed 4/4 echo cases, while the on condition used more
+  tokens in this small campaign. No benefit or statistical significance is
+  claimed. AT-068 is now passed; AT-065 is the sole acceptance blocker.
+  The post-evidence full PostgreSQL/Docker regression passed 287 tests with
+  two declared live rerun skips. The CI evidence gate reported 225 mapped
+  executed testcases, no issues, and only AT-065 blocked in strict mode.
+
 ## Environment constraints
 
 - Model credentials now exist only in the ignored local `.env`; values were never
@@ -807,8 +821,8 @@ Purpose and observable behavior; current repository facts; dependencies; exact f
 
 ## Acceptance evidence
 
-`reports/acceptance_status.json` maps all AT IDs: 66 passed and 2
-blocked_environment (AT-065 and AT-068).
+`reports/acceptance_status.json` maps all AT IDs: 67 passed and 1
+blocked_environment (AT-065).
 P00–P08 executed evidence is in
 `reports/implementation/`. `reports/design_validation.*` describes only
 static design consistency and is not counted as runtime acceptance evidence.

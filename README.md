@@ -38,12 +38,13 @@ P07 的分类提示、按需 skills 与有界子 Run 已通过本地测试。P08
 
 P08 另有 `eval/run_live_tasks.py`：三个固定的“读受管文件→转换→创建
 不可变 Artifact”任务，使用实际产物字节和已提交 Action 评分。该入口
-已在真实 PostgreSQL/Blob 上用模拟模型验证；尚无真实模型成绩，也不是
-公开基准或生产部署证明。
+已生成一组真实 DeepSeek 原始记录：1/3 有证据完成，另外两项失败仍计入
+分母；这不是公开基准或生产部署证明。
 
 另有 `eval/run_live_skills.py`：在相同只读 echo 任务、模型界面、权限和
 预算下独立比较 skill 关闭/开启。两组均经过持久化内核与 ActionGateway；
-本地模拟模型只验证了切换及原始记录链路，尚未测得真实模型收益。
+真实 DeepSeek 小样本中两组均为 4/4 完成，但开启组使用更多 token，不能
+据此宣称收益或统计显著性。
 
 ## 当前可运行切片
 
@@ -136,10 +137,12 @@ Responses API；AT-030 已用真实 DeepSeek 与 PostgreSQL 完成读取、转�
 
 P05 的恢复验收使用确定性的进程内故障 effect driver，并非真实远端服务；DNS/跳转
 测试也使用受控 resolver，并非生产网络抓包或完整出站代理证明。因此 P05 阶段完成，
-但 AT-065/068 的独立 MCP/OAuth 与真实任务评估完成前，不把整个发布出口称为完整通过。
+但 AT-065 的独立 MCP/OAuth 四组实验完成前，不把整个发布出口称为完整通过。AT-068
+已有真实 DeepSeek 三任务 raw JSONL 和 skills off/on 数据；失败仍计入分母，结果不代表
+生产质量或统计显著性。
 
 CI 区分“验收证据映射一致”和“可以发布”：当前 68 项映射检查通过，但
-AT-065、AT-068 未完成，严格发布门禁会返回非零状态；见
+AT-065 未完成，严格发布门禁会返回非零状态；见
 `scripts/check_ci_test_report.py` 与 `reports/acceptance_status.json`。
 
 ## 建议使用方式
