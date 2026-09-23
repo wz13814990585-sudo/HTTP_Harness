@@ -42,6 +42,7 @@ dev = [
 
 [project.scripts]
 hnh-contract-check = "hnh.contracts:main"
+hnh-demo = "hnh.demo:main"
 hnh-dev-worker = "hnh.worker_dev:main"
 
 [tool.hatch.build.targets.wheel]

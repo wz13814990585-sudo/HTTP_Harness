@@ -99,6 +99,26 @@ FUNCTION_TEXT_SCHEMA: dict[str, Any] = {
     "additionalProperties": False,
 }
 
+HTTP_DECISION_RULES: tuple[str, ...] = (
+    "Choose exactly one decision kind: a nonempty operations array, one final_candidate, "
+    "or one request_input; set the other two fields to empty/null.",
+    "An operation result is unavailable until a later model turn. Put dependent operations "
+    "in separate turns and derive their parameters only from committed observations.",
+    "For a JSON capability input, use payload.kind=json and put the capability input object "
+    "in payload.value. GET/HEAD reads use payload=null.",
+    "A final_candidate may cite only Artifact and Action/Event identifiers already present in "
+    "committed observations or source references.",
+)
+
+FUNCTION_DECISION_RULES: tuple[str, ...] = (
+    "Choose function calls, one final_candidate, or one request_input as the complete decision; "
+    "do not mix those decision kinds.",
+    "A function result is unavailable until a later model turn. Put dependent function calls "
+    "in separate turns and derive their arguments only from committed observations.",
+    "A final_candidate may cite only Artifact and Action/Event identifiers already present in "
+    "committed observations or source references.",
+)
+
 
 class OpenAIResponsesProvider:
     """Configured non-streaming OpenAI Responses API adapter without hosted tools."""
@@ -163,14 +183,16 @@ class OpenAIResponsesProvider:
             "context": task_context,
             "source_refs": context.source_refs,
             "capabilities": tools,
+            "decision_rules": HTTP_DECISION_RULES,
         }
         model_input.update(self._input_contract(MODEL_TURN_SCHEMA))
         body = {
             "model": self._model,
             "instructions": (
-                "Return one decision matching the supplied JSON schema. Propose only relative "
-                "/v1 operations from the authorized capability catalog. Never claim completion "
-                "without artifact and evidence identifiers from committed observations."
+                "Return one decision matching the supplied JSON schema and decision_rules. "
+                "Propose only relative /v1 operations from the authorized capability catalog. "
+                "Never claim completion without artifact and evidence identifiers from committed "
+                "observations."
             ),
             "input": json.dumps(model_input, ensure_ascii=False, sort_keys=True),
             "text": {"format": self._text_format("hnh_model_turn", MODEL_TURN_SCHEMA)},
@@ -272,15 +294,19 @@ class OpenAIFunctionToolsProvider(OpenAIResponsesProvider):
         native_context = {
             key: value for key, value in context.content.items() if key != "capabilities"
         }
-        model_input = {"context": native_context, "source_refs": context.source_refs}
+        model_input = {
+            "context": native_context,
+            "source_refs": context.source_refs,
+            "decision_rules": FUNCTION_DECISION_RULES,
+        }
         model_input.update(self._input_contract(FUNCTION_TEXT_SCHEMA))
         body = {
             "model": self._model,
             "instructions": (
-                "Use the supplied functions for capability operations. Never treat a function "
-                "call as already executed. If no operation is needed, return a JSON decision "
-                "with exactly one final_candidate or request_input. "
-                "Do not claim completion without committed artifact and evidence identifiers."
+                "Use the supplied functions for capability operations and follow decision_rules. "
+                "Never treat a function call as already executed. If no operation is needed, "
+                "return a JSON decision with exactly one final_candidate or request_input. Do not "
+                "claim completion without committed artifact and evidence identifiers."
             ),
             "input": json.dumps(model_input, ensure_ascii=False, sort_keys=True),
             "tools": catalog.tools,

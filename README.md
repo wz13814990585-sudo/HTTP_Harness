@@ -4,9 +4,10 @@
 
 **持久化、策略受控、以执行证据为完成依据的 Agent 运行内核。**
 
-版本：`0.1.0.dev0` · 更新：2026-09-23 · P00–P07 本地验收通过；P08
-本地实现已完成，但真实模型与独立远端 MCP 的阶段出口仍受环境阻塞。本项目
-不是生产就绪版本。
+版本：`0.1.0.dev0` · 更新：2026-09-23 · **68 项验收中 67 项通过，0 项失败，
+1 项因外部环境阻塞。** P00–P07 已完成；P08 已有真实 DeepSeek 与远端 CI
+证据，唯一未关闭项是需要独立 HTTPS/OAuth MCP 服务的 AT-065。本项目是可运行的
+研究/作品集版本，不是生产就绪版本。
 
 ```text
 Client / CLI
@@ -24,6 +25,20 @@ Immutable Artifact store   Restricted execution broker
 核心边界：模型只提出不可信操作；内核负责身份、授权、准入、状态提交、恢复和
 完成判定；HTTP、MCP 与 Python 都是执行适配器。
 
+## 验收快照
+
+| 证据 | 当前结果 | 边界 |
+|---|---|---|
+| P00–P07 | 全部阶段验收通过 | 不代表生产多租户安全 |
+| AT-030 真实模型闭环 | DeepSeek + PostgreSQL 两次通过 | 不是大规模模型质量评估 |
+| AT-068 真实任务/skills | 三任务集 1/3；skills off/on 均 4/4 | 小样本，不宣称 skills 收益 |
+| GitHub Actions | 质量、迁移、PostgreSQL/Docker、安全/chaos、Compose smoke 通过 | 使用占位模型，不是 live 运行 |
+| AT-065 | `blocked_environment` | 缺独立 HTTPS MCP/OAuth 服务；不以 localhost 冒充 |
+
+机器可读状态以 [`reports/acceptance_status.json`](reports/acceptance_status.json) 为准；
+阶段证据见 [`reports/implementation/`](reports/implementation/) 和
+[`reports/evaluation/P08.md`](reports/evaluation/P08.md)。
+
 当前已实现真实 PostgreSQL 支撑的 Run 创建、查询、取消意图、鉴权和请求幂等。
 同时已实现授权 Capability 目录、统一 ActionGateway/ResourceDispatcher、受管版本文件、
 不可变 Artifact、本地确定性 adapter、持久化模型循环、完成门禁、可续传事件读取，
@@ -33,7 +48,7 @@ checkpoint 兼容性门禁、统一脱敏和出站目的地校验。P06 已有�
 现代/旧版本地互操作、MRTR/Tasks 持久化和按请求授权的组合入口，但 OAuth 与独立远端验收未完成。
 P07 的分类提示、按需 skills 与有界子 Run 已通过本地测试。P08 已有评估记录器、原生函数工具视图、readiness/metrics、可选的 OTLP HTTP trace 导出、
 离线数据库加 Blob 恢复演练，以及需显式配置真实模型和独立 MCP 服务的四组 × 四个固定输入的只读 echo 评估入口
-`eval/run_live_echo.py`；入口目前仅通过模拟模型/本地 MCP 测试，且四个输入仍属单一 echo 能力，不是跨能力任务集。另有支持原生读取及受管文件/Artifact 本地事务写入的有界 worker 和显式启用的 `hnh-dev-worker` 单机进程入口，已验证 API→PostgreSQL→独立 worker 进程→完成门禁的模拟模型链路、租约续期、身份解析、写入回执丢失后的同键恢复与失效保护。真实四组模型评估与生产 worker 部署仍未完成。以 `PLANS.md`、
+`eval/run_live_echo.py`；该入口目前只完成模拟模型/本地 MCP 的接线验证，且四个输入仍属单一 echo 能力，不是跨能力任务集。另有支持原生读取及受管文件/Artifact 本地事务写入的有界 worker 和显式启用的 `hnh-dev-worker` 单机进程入口，已验证 API→PostgreSQL→独立 worker 进程→完成门禁、租约续期、身份解析、写入回执丢失后的同键恢复与失效保护。真实 DeepSeek 任务集和 skills ablation 已运行；独立 MCP/OAuth 四组实验与生产 worker 部署仍未完成。以 `PLANS.md`、
 `reports/implementation/` 和 `reports/acceptance_status.json` 为真实状态依据。
 
 P08 另有 `eval/run_live_tasks.py`：三个固定的“读受管文件→转换→创建
@@ -45,6 +60,26 @@ P08 另有 `eval/run_live_tasks.py`：三个固定的“读受管文件→转换
 预算下独立比较 skill 关闭/开启。两组均经过持久化内核与 ActionGateway；
 真实 DeepSeek 小样本中两组均为 4/4 完成，但开启组使用更多 token，不能
 据此宣称收益或统计显著性。
+
+## 本地录屏演示
+
+仓库提供一个自清理的本地演示：启动临时 PostgreSQL、API 和独立 worker，
+通过真实 HTTP 写入文件和提交 Run，调用 DeepSeek，最后核验不可变 Artifact
+字节以及已提交的 Action/Event 证据。它不需要云服务器或自有域名，但会消耗少量
+DeepSeek API 配额，并要求本机 Docker Engine 正在运行。
+
+```bash
+uv sync --locked --all-extras --dev
+set -a
+source .env
+set +a
+uv run python scripts/run_portfolio_demo.py
+```
+
+脚本为本次演示生成随机数据库密码和开发 token，不打印密钥；结束后只删除本次
+演示创建的容器、网络和临时卷。逐镜头录制说明和失败处理见
+[`docs/PORTFOLIO_DEMO.md`](docs/PORTFOLIO_DEMO.md)。已有运行中的本地服务也可直接运行
+`uv run hnh-demo`。
 
 ## 当前可运行切片
 
@@ -145,11 +180,12 @@ CI 区分“验收证据映射一致”和“可以发布”：当前 68 项映�
 AT-065 未完成，严格发布门禁会返回非零状态；见
 `scripts/check_ci_test_report.py` 与 `reports/acceptance_status.json`。
 
-## 建议使用方式
+## 阅读与运行入口
 
-将本目录放入一个新仓库。先阅读 `docs/01_architecture.md` 与 `docs/10_roadmap.md`，然后在 Codex 中粘贴 `CODEX_MASTER_PROMPT.md` 的内容。Codex 应先识别仓库和环境，建立实现计划，随后依次实现阶段并运行测试，而不是再次只给出设计建议。
-
-当前可作为受控本地开发服务运行，但 worker 必须显式启动，且尚无生产身份、完整 OAuth 和真实模型评估。运行与备份恢复步骤见 [本地运维手册](docs/P08_local_runbook.md)；不要据此直接部署公网服务。
+先看 [架构边界](docs/01_architecture.md)、[恢复语义](docs/03_runtime_recovery.md)、
+[安全边界](docs/04_security.md) 和 [本地运维手册](docs/P08_local_runbook.md)。
+当前可作为受控本地开发服务运行，但 worker 必须显式启动，且尚无生产身份、完整
+OAuth 或独立远端 MCP 验证；不要据此直接部署公网服务。
 另有固定镜像 digest 的开发用 Compose 拓扑和自清理烟测；它验证迁移、API 与
 worker 进程可启动，但烟测仅使用占位模型凭据，不是实时模型或生产部署证明。
 

@@ -83,6 +83,8 @@ def test_deepseek_responses_provider_sends_reasoning_without_persisting_it() -> 
         "final_candidate",
         "request_input",
     ]
+    assert any("dependent operations" in rule for rule in deepseek_input["decision_rules"])
+    assert any("exactly one decision" in rule for rule in deepseek_input["decision_rules"])
     assert provider.name == "deepseek-responses"
     assert response.output == decision
     assert response.raw_response["output"] == [

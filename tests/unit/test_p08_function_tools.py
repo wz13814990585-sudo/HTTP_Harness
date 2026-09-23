@@ -124,7 +124,9 @@ def test_openai_function_provider_sends_real_function_tools_and_preserves_call()
     body = captured["body"]
     assert body["stream"] is False and body["store"] is False
     assert body["tools"] == catalog.tools
-    assert "capabilities" not in json.loads(body["input"])["context"]
+    model_input = json.loads(body["input"])
+    assert "capabilities" not in model_input["context"]
+    assert any("dependent function calls" in rule for rule in model_input["decision_rules"])
     assert body["parallel_tool_calls"] is True
     assert body["tools"][0]["type"] == "function"
     assert "operations" not in body["text"]["format"]["schema"]["properties"]
